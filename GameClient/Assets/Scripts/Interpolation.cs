@@ -5,7 +5,7 @@ public class Interpolation : MonoBehaviour
 {
     [SerializeField] public InterpolationMode mode;
 
-    static public Convar interpolation = new Convar("interp", 0.1f, "Visual delay for received updates", Flags.CLIENT, 0f, 0.5f);
+    static public Convar interpolation = new Convar("cl_interp", 0.1f, "Visual delay for received updates", Flags.CLIENT, 0f, 0.5f);
 
     private List<TransformUpdate> futureTransformUpdates = new List<TransformUpdate>();
 

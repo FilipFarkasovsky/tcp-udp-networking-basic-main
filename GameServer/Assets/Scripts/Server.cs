@@ -17,10 +17,10 @@ public class Server
 
     public static bool isActive = false;
 
-    public static Convar tickrate = new Convar("tickrate", 32, "Ticks per second", Flags.NETWORK, 1, 128);
+    public static Convar tickrate = new Convar("sv_tickrate", 32, "Ticks per second", Flags.NETWORK, 1, 128);
 
-    static Command serverstop = new Command("serverstop", "Stops server", Flags.NETWORK, () => Server.Stop());
-    static Command serverstart = new Command("serverstart", "Starts server with max players and port number", Flags.NETWORK, (string[] a) =>
+    static Command serverstop = new Command("sv_serverstop", "Stops server", Flags.NETWORK, () => Server.Stop());
+    static Command serverstart = new Command("sv_serverstart", "Starts server with max players and port number", Flags.NETWORK, (string[] a) =>
     {
         if (a.Length <= 1)
             return;

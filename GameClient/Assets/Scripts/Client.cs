@@ -19,7 +19,7 @@ public class Client : MonoBehaviour
     private delegate void PacketHandler(Packet _packet);
     private static Dictionary<int, PacketHandler> packetHandlers;
 
-    public static Convar tickrate = new Convar("tickrate", 32, "Ticks per second", Flags.NETWORK, 1, 128);
+    public static Convar tickrate = new Convar("sv_tickrate", 32, "Ticks per second", Flags.NETWORK, 1, 128);
 
     private void Awake()
     {

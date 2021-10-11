@@ -99,6 +99,7 @@ public class ClientHandle : MonoBehaviour
 
     public static void ServerConvar(Packet _packet)
     {
+        Debug.Log("Server convar");
         string name = _packet.ReadString();
         float value = _packet.ReadFloat();
         string helpString = _packet.ReadString();

@@ -36,22 +36,12 @@ public class ConsoleUI : MonoBehaviour
 
     public void Awake()
     {
-        help = new Command("help", "Shows help about commands/convars", Flags.NONE, (string[] a) =>
-        {
-            string fullCommand = String.Empty;
-            for (int i = 0; i < a.Length; i++)
-            {
-                fullCommand += a[i] + " ";
-            }
-            helpCommand(fullCommand);
-        });
-
-        showallcommands = new Command("showall", "Shows all commands/convars", Flags.NONE, () =>
+        help = new Command("help", "Shows help about commands/convars", Flags.NONE, () =>
         {
             showAllCommands();
         });
 
-        find = new Command("find", "Searches all commands/convars", Flags.NONE, (string[] a) =>
+        find = new Command("cm_find", "Searches all commands/convars", Flags.NONE, (string[] a) =>
         {
             searchAllConsoleCommandsList(a[0]);
         });
@@ -61,7 +51,7 @@ public class ConsoleUI : MonoBehaviour
             clearConsoleCommands();
         });
 
-        toggleconsole = new Command("toggleconsole", "Toggles console", Flags.NONE, () =>
+        toggleconsole = new Command("cm_toggleconsole", "Toggles console", Flags.NONE, () =>
         {
             isOpen = !isOpen;
             // Move to the bottom of the console
@@ -70,7 +60,7 @@ public class ConsoleUI : MonoBehaviour
             Canvas.ForceUpdateCanvases();
         });
 
-        exec = new Command("exec", "Executes config file", Flags.NONE, (string[] a) =>
+        exec = new Command("cm_exec", "Executes config file", Flags.NONE, (string[] a) =>
         {
             string command = String.Empty;
             for (int i = 0; i < a.Length; i++)
@@ -80,7 +70,7 @@ public class ConsoleUI : MonoBehaviour
             loadTxtFile(command.TrimEnd());
         });
 
-        bind = new Command("bind", "Binds command to key", Flags.NONE, (string[] a) =>
+        bind = new Command("cm_bind", "Binds command to key", Flags.NONE, (string[] a) =>
         {
             string command = String.Empty;
             for (int i = 1; i < a.Length; i++)
@@ -90,22 +80,22 @@ public class ConsoleUI : MonoBehaviour
             bindKey(a[0], command.TrimEnd());
         });
 
-        unbind = new Command("unbind", "Unbinds key", Flags.NONE, (string[] a) =>
+        unbind = new Command("cm_unbind", "Unbinds key", Flags.NONE, (string[] a) =>
         {
             unbindKey(a[0].ToUpper());
         });
 
-        unbindall = new Command("unbindall", "Unbinds all keys", Flags.NONE, () =>
+        unbindall = new Command("cm_unbindall", "Unbinds all keys", Flags.NONE, () =>
         {
             unbindAll();
         });
 
-        key_listboundkeys = new Command("key_listboundkeys", "Shows all bound keys", Flags.NONE, () =>
+        key_listboundkeys = new Command("cm_listboundkeys", "Shows all bound keys", Flags.NONE, () =>
         {
             showAllBinds();
         });
 
-        key_findbinding = new Command("key_findbinding", "Finds command in binds", Flags.NONE, (string[] a) =>
+        key_findbinding = new Command("cm_findbinding", "Finds command in binds", Flags.NONE, (string[] a) =>
         {
             string fullCommand = String.Empty;
             for (int i = 0; i < a.Length; i++)
@@ -160,28 +150,18 @@ public class ConsoleUI : MonoBehaviour
         }
     }
 
-    // Shows help about the given command
-    void helpCommand(string command)
-    {
-        string finalText = CommandGetHelp(command.TrimEnd());
-        if (finalText == String.Empty) // String is empty, no command could be found return
-        {
-            AddText("Couldnt find any help about \"" + command.TrimEnd() + "\"", 1);
-            return;
-        }
-        AddText(finalText);
-    }
-
     // Shows all convars/commands in an unorganized order
     void showAllCommands()
     {
-        foreach (Convar i in Convars.list)
-        {
-            AddText(i.name);
-        }
         foreach (Command i in Commands.list)
         {
-            AddText(i.name);
+            AddText(CommandGetHelp(i.name));
+            input.Add(i.name);
+        }
+        foreach (Convar i in Convars.list)
+        {
+            AddText(CommandGetHelp(i.name));
+            input.Add(i.name + i.defaultValue);
         }
     }
 
@@ -219,7 +199,7 @@ public class ConsoleUI : MonoBehaviour
 
             Destroy(go);
         }
-        AddText("clear");
+        AddText("clear", 3);
     }
 
     // Binds given key to given command
@@ -231,14 +211,14 @@ public class ConsoleUI : MonoBehaviour
 
         if (System.Enum.TryParse(_key, out KeyCode _) == false) // Key doesnt exist, return
         {
-            AddText("Key couldnt be found", 1);
+            AddText("Key couldnt be found", 2);
             return;
         }
 
         KeyCode keyCode = (KeyCode)System.Enum.Parse(typeof(KeyCode), _key);
         if (keyCode.ToString().TrimStart() == String.Empty) // Key is empty, return
         {
-            AddText("Key couldnt be found", 1);
+            AddText("Key couldnt be found", 2);
             return;
         }
 
@@ -260,7 +240,7 @@ public class ConsoleUI : MonoBehaviour
             {
                 if (Binds.list.ElementAt(index).commandString == String.Empty) // If the asked command is empty, then it is bound to nothing
                 {
-                    AddText("Key isnt binded", 1); // Return that it isnt bound
+                    AddText("Key isnt binded", 2); // Return that it isnt bound
                     return;
                 }
                 // Else return the command it is bound to
@@ -277,7 +257,7 @@ public class ConsoleUI : MonoBehaviour
         // but the key doesnt exist, so it cant be bound to anything, return
         if (command == String.Empty && index == -1)
         {
-            AddText("Key isnt binded", 1);
+            AddText("Key isnt binded", 2);
             return;
         }
 
@@ -294,14 +274,14 @@ public class ConsoleUI : MonoBehaviour
 
         if (System.Enum.TryParse(_key, out KeyCode _) == false) // Key doesnt exist, return
         {
-            AddText("Key couldnt be found", 1);
+            AddText("Key couldnt be found", 2);
             return;
         }
 
         KeyCode keyCode = (KeyCode)System.Enum.Parse(typeof(KeyCode), _key);
         if (keyCode.ToString().TrimStart() == String.Empty) // Key is empty, return
         {
-            AddText("Key couldnt be found", 1);
+            AddText("Key couldnt be found", 2);
             return;
         }
 
@@ -466,7 +446,7 @@ public class ConsoleUI : MonoBehaviour
 
         // It checks if you want to show a response
         if (showResponse)
-            AddText(response);
+            AddText(response, 1);
 
         // When the string contains a ; the it splits the line to different commands
         // The check for binding a key is because, when binding we want to be able to bind
@@ -655,6 +635,9 @@ public class ConsoleUI : MonoBehaviour
                 break;
             case 2:
                 text.GetComponent<Text>().color = Color.red;
+                break;
+            case 3: 
+                text.GetComponent<Text>().color = Color.green;
                 break;
         }
         text.SetActive(true);

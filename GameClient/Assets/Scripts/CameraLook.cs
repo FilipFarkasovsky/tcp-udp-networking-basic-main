@@ -3,7 +3,7 @@
 public class CameraLook : MonoBehaviour
 {
     static Convar rotationBounds = new Convar("sv_maxrotation", 89f, "Maximum rotation around the x axis", Flags.NETWORK);
-    static Convar rotationSensitivity = new Convar("sensitivity", 2.5f, "Camera rotation sensitivity", Flags.CLIENT);
+    static Convar rotationSensitivity = new Convar("cl_sensitivity", 2.5f, "Camera rotation sensitivity", Flags.CLIENT);
     
     public Camera playerCamera;
 

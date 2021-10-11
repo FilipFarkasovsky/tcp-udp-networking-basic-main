@@ -54,6 +54,7 @@ public class ClientSend : MonoBehaviour
     /// <summary>Sends request to change convar.</summary>
     public static void PlayerConvar(Convar i, float _value)
     {
+        Debug.Log("Player convar");
         using (Packet _packet = new Packet((int)ClientPackets.playerConvar))
         {
             _packet.Write(i.name);
