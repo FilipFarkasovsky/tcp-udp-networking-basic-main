@@ -65,7 +65,10 @@ public class Interpolation : MonoBehaviour
             foreach (TransformUpdate update in futureTransformUpdates.ToArray())
             {
                 if (update == null || update == TransformUpdate.zero)
+                {
+                    futureTransformUpdates.Remove(update);
                     continue;
+                }
 
                 // if tick < current client tick - interpolation amount, then remove
                 if (update.tick < GlobalVariables.clientTick - Utils.timeToTicks(interpolation.GetValue()))
@@ -75,7 +78,10 @@ public class Interpolation : MonoBehaviour
                 }
 
                 if (update.tick <= last?.tick)
+                {
+                    futureTransformUpdates.Remove(update);
                     continue;
+                }
 
                 // Purpose: Add fake packets in between real ones, to account for packet loss
                 if (last != TransformUpdate.zero)
@@ -92,6 +98,7 @@ public class Interpolation : MonoBehaviour
                             // Create new update
                             TransformUpdate inBetween = TransformUpdate.zero;
 
+                            Debug.Log("INTERPOLATION");
                             // Calculate the fraction in between the ticks
                             float fraction = (float)j / (float)tickDifference;
 

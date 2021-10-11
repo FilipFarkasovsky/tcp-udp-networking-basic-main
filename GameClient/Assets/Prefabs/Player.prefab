@@ -63,7 +63,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   mode: 0
   timeElapsed: 0
-  timeToReachTarget: 0.1
+  timeToReachTarget: 0.03125
   isLocalPlayer: 0
   Sync: 1
   Delay: 0
