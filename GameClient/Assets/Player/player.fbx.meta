@@ -7,14 +7,41 @@ ModelImporter:
       74: -8945691123924629249
     second: Armature|Idle
   - first:
+      74: 4106399916549189888
+    second: Armature|Idle.001
+  - first:
       74: -1987514555843646443
     second: Armature|WalkForward
+  - first:
+      74: -7153239322588114815
+    second: Armature|WalkForward.001
   - first:
       74: 1589235912372564019
     second: Armature|WalkForwardLeft
   - first:
+      74: -3233266557610397116
+    second: Armature|WalkForwardLeft.001
+  - first:
+      74: 8337213210988343921
+    second: Armature|WalkForwardLeft.002
+  - first:
+      74: -6886873758552883425
+    second: Armature|WalkForwardLeft.003
+  - first:
+      74: 6981043475000562034
+    second: Armature|WalkForwardLeft.004
+  - first:
+      74: -8553081832066167464
+    second: Armature|WalkForwardLeft.005
+  - first:
+      74: 5539011464144438255
+    second: Armature|WalkForwardLeft.008
+  - first:
       74: -8152916897657973659
     second: Armature|WalkLeft
+  - first:
+      74: -801708374745310551
+    second: Armature|WalkLeft.001
   externalObjects: {}
   materials:
     materialImportMode: 2
