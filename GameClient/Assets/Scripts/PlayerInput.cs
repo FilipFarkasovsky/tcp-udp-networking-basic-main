@@ -16,6 +16,7 @@ public class PlayerInput : MonoBehaviour
 
     public GameObject groundCheck;
     public LayerMask whatIsGround;
+    public Animator animator;
     public float checkRadius;
 
     [HideInInspector]
@@ -63,7 +64,17 @@ public class PlayerInput : MonoBehaviour
         ProcessInput(inputState);
          
         // Send inputs so the server can process them
+        //TODO: Refactorize this
+        try
+        {
         SendInputToServer();
+             
+        }
+        catch (System.Exception)
+        {
+            
+            //throw;
+        }
 
         // Reconciliate
         if (serverSimulationState != null) Reconciliate();
@@ -140,6 +151,10 @@ public class PlayerInput : MonoBehaviour
 
         velocity = rb.velocity;
         rb.isKinematic = true;
+
+        //Strafe Animation
+        animator.SetFloat("HorizontalAxis", velocity.x/moveSpeed.GetValue());
+        animator.SetFloat("VerticalAxis", velocity.z/moveSpeed.GetValue());
     }
 
     // Normalizes rotation
