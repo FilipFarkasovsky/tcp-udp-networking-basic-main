@@ -141,6 +141,8 @@ public class PlayerInput : MonoBehaviour
     
     private void ProcessInput(ClientInputState inputs)
     {
+
+
         RotationCheck(inputs);
 
         rb.isKinematic = false;
@@ -152,9 +154,20 @@ public class PlayerInput : MonoBehaviour
         velocity = rb.velocity;
         rb.isKinematic = true;
 
+        //animator.SetFloat("HorizontalAxis", inputs.HorizontalAxis);
+        //animator.SetFloat("VerticalAxis", inputs.VerticalAxis);
+        Animate();
+    }
+
+    //Assign axis properties in animator controller
+    private void Animate(){
+        Vector3 localVelocity = Quaternion.Euler(0 ,transform.rotation.eulerAngles.y - playerCamera.transform.rotation.eulerAngles.y ,0) * new Vector3 (velocity.x, 0, velocity.z);
+
         //Strafe Animation
-        animator.SetFloat("HorizontalAxis", velocity.x/moveSpeed.GetValue());
-        animator.SetFloat("VerticalAxis", velocity.z/moveSpeed.GetValue());
+
+        animator.SetFloat("HorizontalAxis", localVelocity.x/moveSpeed.GetValue());
+        animator.SetFloat("VerticalAxis", localVelocity.z/moveSpeed.GetValue());
+    
     }
 
     // Normalizes rotation
