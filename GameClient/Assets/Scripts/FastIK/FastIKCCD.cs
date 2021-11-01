@@ -1,5 +1,5 @@
 ﻿using UnityEngine;
-/*
+
 public class IKCCD : MonoBehaviour
 {
     public int ChainLength = 2;
@@ -92,4 +92,3 @@ public class IKCCD : MonoBehaviour
     
 
 }
-*/
