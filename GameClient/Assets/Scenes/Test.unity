@@ -590,6 +590,22 @@ PrefabInstance:
       propertyPath: m_Name
       value: Fin_LocalPlayer
       objectReference: {fileID: 0}
+    - target: {fileID: 5335273175866392694, guid: 771f4599d98028948ae5a82de1deb851, type: 3}
+      propertyPath: m_Weight
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 5335273176039249513, guid: 771f4599d98028948ae5a82de1deb851, type: 3}
+      propertyPath: m_Weight
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 5335273176634567994, guid: 771f4599d98028948ae5a82de1deb851, type: 3}
+      propertyPath: m_LocalPosition.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 5335273176843784311, guid: 771f4599d98028948ae5a82de1deb851, type: 3}
+      propertyPath: m_Weight
+      value: 1
+      objectReference: {fileID: 0}
     m_RemovedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 771f4599d98028948ae5a82de1deb851, type: 3}
 --- !u!1 &1219219298

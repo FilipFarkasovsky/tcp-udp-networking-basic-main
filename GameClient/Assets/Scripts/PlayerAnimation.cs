@@ -5,17 +5,23 @@ public class PlayerAnimation : MonoBehaviour
 {
     public Animator animator;
     public Rig aimLayer;
+    public Rig handsIK;
     private bool isFiring;
     private Weapon weapon;
+    public Transform weaponParent;
     private void Start(){
         Weapon existingWeapon = GetComponentInChildren<Weapon>();
         EquipWeapon(existingWeapon);
     }
 
     private void Update(){
-        aimLayer.weight = 1f;
-
-        if(isFiring) weapon.UpdateFiring(Time.deltaTime);
+        if(weapon){
+            handsIK.weight = 1f;
+            if(isFiring) weapon.UpdateFiring(Time.deltaTime);
+        }
+        else{
+        handsIK.weight = 0f;
+        }
     }
 
     public void UpdateAnimatorProperties(float lateralSpeed, float forwardSpeed, bool grounded, bool jumping){
@@ -29,6 +35,12 @@ public class PlayerAnimation : MonoBehaviour
     }
 
     public void EquipWeapon(Weapon newWeapon){
+        if(weapon){
+            Destroy(weapon.gameObject);
+        }
         weapon = newWeapon;
+        weapon.transform.parent = weaponParent;
+        weapon.transform.localPosition = Vector3.zero;
+        weapon.transform.localRotation = Quaternion.identity;
     }
 }
