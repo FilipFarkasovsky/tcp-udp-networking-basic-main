@@ -16,7 +16,6 @@ public class PlayerInput : MonoBehaviour
 
     public GameObject groundCheck;
     public LayerMask whatIsGround;
-    public Animator animator;
     public float checkRadius;
 
     [HideInInspector]
@@ -62,19 +61,10 @@ public class PlayerInput : MonoBehaviour
     {
         // Process inputs
         ProcessInput(inputState);
-         
+
+        //TODO: Remove comments 
         // Send inputs so the server can process them
-        //TODO: Refactorize this
-        try
-        {
-        SendInputToServer();
-             
-        }
-        catch (System.Exception)
-        {
-            
-            //throw;
-        }
+        //SendInputToServer();
 
         // Reconciliate
         if (serverSimulationState != null) Reconciliate();
@@ -136,6 +126,9 @@ public class PlayerInput : MonoBehaviour
             VerticalAxis = Input.GetAxisRaw("Vertical"),
             rotation = playerCamera.transform.rotation,
         };
+        //Vector3 localVelocity = Quaternion.Euler(0 ,transform.rotation.eulerAngles.y - playerCamera.transform.rotation.eulerAngles.y ,0) * new Vector3 (velocity.x, 0, velocity.z);
+        Vector3 localVelocity = Quaternion.Euler(0 ,transform.rotation.eulerAngles.y - playerCamera.transform.rotation.eulerAngles.y ,0) * new Vector3 (velocity.x, 0, velocity.z);
+        playerManager.playerAnimation.UpdateAnimatorProperties(localVelocity.x/moveSpeed.GetValue(), localVelocity.z/moveSpeed.GetValue(), isGrounded, Input.GetButton("Jump"));
         logicTimer.Update();
     }
     
@@ -153,21 +146,6 @@ public class PlayerInput : MonoBehaviour
 
         velocity = rb.velocity;
         rb.isKinematic = true;
-
-        //animator.SetFloat("HorizontalAxis", inputs.HorizontalAxis);
-        //animator.SetFloat("VerticalAxis", inputs.VerticalAxis);
-        Animate();
-    }
-
-    //Assign axis properties in animator controller
-    private void Animate(){
-        Vector3 localVelocity = Quaternion.Euler(0 ,transform.rotation.eulerAngles.y - playerCamera.transform.rotation.eulerAngles.y ,0) * new Vector3 (velocity.x, 0, velocity.z);
-
-        //Strafe Animation
-
-        animator.SetFloat("HorizontalAxis", localVelocity.x/moveSpeed.GetValue());
-        animator.SetFloat("VerticalAxis", localVelocity.z/moveSpeed.GetValue());
-    
     }
 
     // Normalizes rotation
