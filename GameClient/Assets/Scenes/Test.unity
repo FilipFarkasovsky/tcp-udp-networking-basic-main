@@ -538,6 +538,10 @@ PrefabInstance:
   m_Modification:
     m_TransformParent: {fileID: 0}
     m_Modifications:
+    - target: {fileID: 686584917547256762, guid: 771f4599d98028948ae5a82de1deb851, type: 3}
+      propertyPath: whatIsHittable.m_Bits
+      value: 64
+      objectReference: {fileID: 0}
     - target: {fileID: 746358305052123874, guid: 771f4599d98028948ae5a82de1deb851, type: 3}
       propertyPath: m_RootOrder
       value: 11

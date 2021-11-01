@@ -129,7 +129,6 @@ public class PlayerInput : MonoBehaviour
 
         Vector3 localVelocity = Quaternion.Euler(0 ,transform.rotation.eulerAngles.y - playerCamera.transform.rotation.eulerAngles.y ,0) * new Vector3 (velocity.x, 0, velocity.z);
         playerManager.playerAnimation.IsFiring(Input.GetButton("Fire1"));
-        playerManager.playerAnimation.IsAiming(Input.GetButton("Fire2"));
         playerManager.playerAnimation.UpdateAnimatorProperties(localVelocity.x/moveSpeed.GetValue(), localVelocity.z/moveSpeed.GetValue(), isGrounded, Input.GetButton("Jump"));
         logicTimer.Update();
     }
