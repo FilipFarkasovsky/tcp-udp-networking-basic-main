@@ -4,16 +4,33 @@ using UnityEngine;
 
 public class Weapon : MonoBehaviour
 {
+    [Header("Raycast settings")]
+    public LayerMask whatIsHittable;
     public GameObject playerCamera;
+
+    [Header("Effect references")]
     public ParticleSystem muzzleFlash;
     public ParticleSystem hitEffect;
     public TrailRenderer tracerEffect;
-    public LayerMask whatIsHittable;
     public int fireRate = 20;
-    float acccumulatedTime = 0;
-    private Vector3 hitPoint, normal;
-    private LayerMask layer;
 
+    [Header("Hitmarker settings")]
+    public UnityEngine.UI.Image hitmarkerImage;
+    public float showTime;
+    public AudioClip hitSound;
+    public AudioClip killSound;
+    public AudioSource audioSource;
+
+    
+    //     -----  PRIVATE VARIABLES  -----
+    private LayerMask layer;
+    private float acccumulatedTime = 0;
+    private Vector3 hitPoint, normal;
+
+    private void Start()
+    {
+        
+    }
     public void UpdateFiring(float deltaTime){
     acccumulatedTime += deltaTime;
     float fireInterval = 1f/fireRate;
@@ -54,6 +71,7 @@ public class Weapon : MonoBehaviour
 
         TrailEffect(hitPoint);
         HitEffect(hitPoint, normal);
+        if(layer == LayerMask.NameToLayer("Enemy")) GetHitmarker();
     }
 
     public void TrailEffect(Vector3 hitPoint){
@@ -66,5 +84,17 @@ public class Weapon : MonoBehaviour
                     hitEffect.transform.position = hitPoint;
                     hitEffect.transform.forward = normal;
                     hitEffect.Emit(1);
+    }
+
+    public void GetHitmarker(){
+        StopCoroutine("showhitmarker");
+        audioSource.PlayOneShot(hitSound);
+        hitmarkerImage.enabled = true;
+        StartCoroutine("showhitmarker");
+    }
+
+    private IEnumerator showhitmarker(){
+        yield return new WaitForSeconds(showTime);
+        hitmarkerImage.enabled = false;
     }
 }

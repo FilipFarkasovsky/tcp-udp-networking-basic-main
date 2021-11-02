@@ -1457,9 +1457,29 @@ PrefabInstance:
       value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 7433820668919553580, guid: b1347fded13429449bded02dca111a82, type: 3}
+      propertyPath: hitSound
+      value: 
+      objectReference: {fileID: 8300000, guid: ee793f4240b012540a90b6d2208decd2, type: 3}
+    - target: {fileID: 7433820668919553580, guid: b1347fded13429449bded02dca111a82, type: 3}
+      propertyPath: showTime
+      value: 0.1
+      objectReference: {fileID: 0}
+    - target: {fileID: 7433820668919553580, guid: b1347fded13429449bded02dca111a82, type: 3}
+      propertyPath: killSound
+      value: 
+      objectReference: {fileID: 8300000, guid: 5a5482de10df56f4cae7c9a67562e21d, type: 3}
+    - target: {fileID: 7433820668919553580, guid: b1347fded13429449bded02dca111a82, type: 3}
       propertyPath: playerCamera
       value: 
       objectReference: {fileID: 5335273175949450812}
+    - target: {fileID: 7433820668919553580, guid: b1347fded13429449bded02dca111a82, type: 3}
+      propertyPath: whatIsHittable.m_Bits
+      value: 192
+      objectReference: {fileID: 0}
+    - target: {fileID: 8303643207090425139, guid: b1347fded13429449bded02dca111a82, type: 3}
+      propertyPath: m_LocalPosition.x
+      value: 0
+      objectReference: {fileID: 0}
     m_RemovedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: b1347fded13429449bded02dca111a82, type: 3}
 --- !u!4 &7422775183986697771 stripped
