@@ -29,7 +29,13 @@ public class UIManager : MonoBehaviour
         startMenu.SetActive(false);
         usernameField.interactable = false;
         adressField.interactable = false;
-        Client.instance.ip = adressField.text;
+        if(string.IsNullOrEmpty(adressField.text)){
+            Client.instance.ip = "192.168.0.105";
+        }
+        else {
+            Client.instance.ip = adressField.text;
+        }
+        
         Client.instance.ConnectToServer();
     }
 }
