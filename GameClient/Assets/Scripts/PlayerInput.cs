@@ -113,7 +113,6 @@ public class PlayerInput : MonoBehaviour
             buttons |= Button.Jump;
         if (Input.GetButton("Fire1"))
             buttons |= Button.Fire1;
-        Debug.Log(buttons);
 
         // Set new input
         inputState = new ClientInputState
@@ -352,6 +351,8 @@ public class PlayerInput : MonoBehaviour
         {
             // Show warning about misprediction
             Debug.LogWarning("Client misprediction with a difference of " + difference + " at frame " + serverSimulationState.simulationFrame + ".");
+            DebugScreen.mispredictions++;
+            DebugScreen.mispredictionsPerSec++;
 
             // Set the player's position to match the server's state. 
             setPlayerToSimulationState(serverSimulationState);
