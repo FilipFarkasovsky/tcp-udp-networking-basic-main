@@ -26,12 +26,18 @@ public class Player : MonoBehaviour
 
     [HideInInspector]
     public Vector3 velocity = Vector3.zero;
-    private bool isGrounded;
+    public bool isGrounded;
 
     private int lastFrame;
     private Queue<ClientInputState> clientInputs = new Queue<ClientInputState>();
 
     LogicTimer logicTimer;
+
+    public bool isFiring;
+    public float lateralSpeed;
+    public float forwardSpeed;
+    public bool jumping;
+
 
     // Set corresponding id and name
     public void Initialize(int _id, string _username)
@@ -97,6 +103,13 @@ public class Player : MonoBehaviour
 
             // Send the state back to the client.
             ServerSend.SendSimulationState(id, state);
+
+            //Obtain animation data
+            isFiring = (inputState.buttons & Button.Fire1) == Button.Fire1;
+            Vector3 localVelocity = Quaternion.Euler(0 ,transform.rotation.eulerAngles.y - head.transform.rotation.eulerAngles.y ,0) * new Vector3 (velocity.x, 0, velocity.z);
+            lateralSpeed = localVelocity.x/moveSpeed.GetValue();
+            forwardSpeed =  localVelocity.z/moveSpeed.GetValue();
+            jumping = (inputState.buttons & Button.Jump) == Button.Jump;
         }
     }
 

@@ -5,7 +5,7 @@ public class CameraLook : MonoBehaviour
     static Convar rotationBounds = new Convar("sv_maxrotation", 89f, "Maximum rotation around the x axis", Flags.NETWORK);
     static Convar rotationSensitivity = new Convar("sensitivity", 2.5f, "Camera rotation sensitivity", Flags.CLIENT);
     
-    public Camera playerCamera;
+    public Transform playerCamera;
 
     private ConsoleUI consoleUI;
 
@@ -31,9 +31,7 @@ public class CameraLook : MonoBehaviour
     {
         if (Cursor.lockState != CursorLockMode.Locked)
             Cursor.lockState = CursorLockMode.Locked;
-        if (Input.GetKey(KeyCode.Escape))
-            Cursor.lockState = CursorLockMode.Confined;
-            
+        
         float _mouseVertical = -Input.GetAxis("Mouse Y");
         float _mouseHorizontal = Input.GetAxis("Mouse X");
 

@@ -62,9 +62,8 @@ public class PlayerInput : MonoBehaviour
         // Process inputs
         ProcessInput(inputState);
 
-        //TODO: Remove comments 
         // Send inputs so the server can process them
-        //SendInputToServer();
+        SendInputToServer();
 
         // Reconciliate
         if (serverSimulationState != null) Reconciliate();
@@ -114,6 +113,7 @@ public class PlayerInput : MonoBehaviour
             buttons |= Button.Jump;
         if (Input.GetButton("Fire1"))
             buttons |= Button.Fire1;
+        Debug.Log(buttons);
 
         // Set new input
         inputState = new ClientInputState

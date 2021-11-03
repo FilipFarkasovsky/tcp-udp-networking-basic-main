@@ -13,6 +13,8 @@ public class Weapon : MonoBehaviour
     public ParticleSystem hitEffect;
     public TrailRenderer tracerEffect;
     public int fireRate = 20;
+    [Header("Sound references")]
+    public AudioClip gunFire;
 
     [Header("Hitmarker settings")]
     public UnityEngine.UI.Image hitmarkerImage;
@@ -23,13 +25,13 @@ public class Weapon : MonoBehaviour
 
     
     //     -----  PRIVATE VARIABLES  -----
-    private LayerMask layer;
+    private int layer;
     private float acccumulatedTime = 0;
     private Vector3 hitPoint, normal;
 
     private void Start()
     {
-        
+        audioSource.volume = 0.3f;
     }
     public void UpdateFiring(float deltaTime){
     acccumulatedTime += deltaTime;
@@ -43,27 +45,33 @@ public class Weapon : MonoBehaviour
     public void FireBullet(){
         //Muzzle Flash
         muzzleFlash.Emit(1);
+        audioSource.PlayOneShot(gunFire);
 
 
         // Hit and trail effect
         RaycastHit[] hits = Physics.RaycastAll(playerCamera.transform.position, playerCamera.transform.forward, 100, whatIsHittable);
         if(hits.Length > 1){
             for (int i = 0; i < hits.Length; i++){
-                if (hits[i].transform.gameObject.layer == LayerMask.NameToLayer("Ground")||
-                    hits[i].transform.gameObject.layer == LayerMask.NameToLayer("Enemy")||
-                    hits[i].transform.gameObject.layer == LayerMask.NameToLayer("Object")
-                ){
-                    hitPoint = hits[i].point;
-                    normal = hits[i].normal;
-                    layer = hits[i].transform.gameObject.layer;
-                    break;
-                }
+                if(hits[i].transform.gameObject.layer == LayerMask.NameToLayer("Destructible")){
+                     hits[i].transform.gameObject.GetComponent<Destructible>().Destruct(); 
+                } 
+                 if(hits[i].transform.gameObject.layer == LayerMask.NameToLayer("Enemy")) GetHitmarker();
+
+                hitPoint = hits[i].point;
+                normal = hits[i].normal;
+                layer = hits[i].transform.gameObject.layer;
             }
         }
         else if(hits.Length == 1){
             hitPoint = hits[0].point;
             normal = hits[0].normal;
             layer = hits[0].transform.gameObject.layer;
+
+            if(hits[0].transform.gameObject.layer == LayerMask.NameToLayer("Enemy")) GetHitmarker();
+
+            if(layer == LayerMask.NameToLayer("Destructible")){
+                hits[0].transform.gameObject.GetComponent<Destructible>().Destruct(); 
+            } 
         }
         else{
             return;
@@ -71,7 +79,6 @@ public class Weapon : MonoBehaviour
 
         TrailEffect(hitPoint);
         HitEffect(hitPoint, normal);
-        if(layer == LayerMask.NameToLayer("Enemy")) GetHitmarker();
     }
 
     public void TrailEffect(Vector3 hitPoint){

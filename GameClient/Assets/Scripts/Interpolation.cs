@@ -53,6 +53,9 @@ public class Interpolation : MonoBehaviour
         current = new TransformUpdate(currentTick, Time.time, Time.time, transform.position, transform.position, transform.rotation, transform.rotation);
     }
 
+    public void What(){
+        Debug.Log(futureTransformUpdates.Count);
+    }
     private void Update()
     {
         if (Sync)
@@ -79,7 +82,6 @@ public class Interpolation : MonoBehaviour
 
                 if (update.tick <= last?.tick)
                 {
-                    futureTransformUpdates.Remove(update);
                     continue;
                 }
 
@@ -98,7 +100,6 @@ public class Interpolation : MonoBehaviour
                             // Create new update
                             TransformUpdate inBetween = TransformUpdate.zero;
 
-                            Debug.Log("INTERPOLATION");
                             // Calculate the fraction in between the ticks
                             float fraction = (float)j / (float)tickDifference;
 

@@ -7,6 +7,7 @@ public class UIManager : MonoBehaviour
 
     public GameObject startMenu;
     public InputField usernameField;
+    public InputField adressField;
 
     private void Awake()
     {
@@ -26,6 +27,8 @@ public class UIManager : MonoBehaviour
     {
         startMenu.SetActive(false);
         usernameField.interactable = false;
+        adressField.interactable = false;
+        Client.instance.ip = adressField.text;
         Client.instance.ConnectToServer();
     }
 }

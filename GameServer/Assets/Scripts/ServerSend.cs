@@ -150,8 +150,14 @@
         {
             _packet.Write(_player.id);
             _packet.Write(_player.transform.position);
-            _packet.Write(_player.transform.rotation);
+            _packet.Write(_player.head.transform.rotation);
             _packet.Write(_player.tick);
+            _packet.Write(_player.isFiring);
+            _packet.Write(_player.lateralSpeed);
+            _packet.Write(_player.forwardSpeed);
+            _packet.Write(_player.isGrounded);
+            _packet.Write(_player.jumping);
+
 
             SendUDPDataToAll(_player.id, _packet);
         }

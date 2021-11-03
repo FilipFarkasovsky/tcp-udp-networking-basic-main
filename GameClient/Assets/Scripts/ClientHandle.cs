@@ -66,13 +66,22 @@ public class ClientHandle : MonoBehaviour
         Vector3 _position = _packet.ReadVector3();
         Quaternion _rotation = _packet.ReadQuaternion();
         int _serverTick = _packet.ReadInt();
+        
+        bool _isFiring = _packet.ReadBool();
+        float _lateralSpeed = _packet.ReadFloat();
+        float _forwardSpeed = _packet.ReadFloat();
+        bool _grounded = _packet.ReadBool();
+        bool _jumping = _packet.ReadBool();
 
         if (GameManager.players.TryGetValue(_id, out PlayerManager _player))
         {
             if (_serverTick > GlobalVariables.serverTick)
                 GlobalVariables.serverTick = _serverTick;
 
-            _player.interpolation.NewUpdate(_serverTick, _position, _rotation);
+            _player.interpolation.NewUpdate(_serverTick, _position);
+            _player.cameraInterpolation.NewUpdate(_serverTick, _rotation);
+            _player.playerAnimation.IsFiring(_isFiring);
+            _player.playerAnimation.UpdateAnimatorProperties(_lateralSpeed, _forwardSpeed, _grounded, _jumping);
         }
     }
 

@@ -6,7 +6,7 @@ public class PlayerAnimation : MonoBehaviour
     public Animator animator;
     public Rig aimLayer;
     public Rig handsIK;
-    private bool isFiring;
+    public bool isFiring;
     private Weapon weapon;
     public Transform weaponParent;
     private void Start(){
@@ -14,7 +14,7 @@ public class PlayerAnimation : MonoBehaviour
         EquipWeapon(existingWeapon);
     }
 
-    private void Update(){
+    private void LateUpdate(){
         if(weapon){
             handsIK.weight = 1f;
             if(isFiring) weapon.UpdateFiring(Time.deltaTime);
