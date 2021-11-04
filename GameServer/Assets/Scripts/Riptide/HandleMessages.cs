@@ -1,7 +1,7 @@
 ﻿using UnityEngine;
 using RiptideNetworking;
 
-public class ServerHandle
+public class HandleMessages
 {
     [MessageHandler((ushort)ClientToServerId.playerName)]
     public static void PlayerName(ushort fromClientId, Message message)

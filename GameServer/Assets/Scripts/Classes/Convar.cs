@@ -171,7 +171,7 @@ public class Convar
 
     public void SendValue()
     {
-        ServerSend.SendConvar(this);
+        SendMessages.SendConvar(this);
     }
 
 }

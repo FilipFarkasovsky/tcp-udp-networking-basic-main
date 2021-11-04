@@ -102,7 +102,7 @@ public class NetworkManager : MonoBehaviour
             if(Player.List.TryGetValue(i, out Player player))
                 player.tick = tick;
         }
-        ServerSend.ServerTick();
+        SendMessages.ServerTick();
     }
 
     private void OnApplicationQuit()

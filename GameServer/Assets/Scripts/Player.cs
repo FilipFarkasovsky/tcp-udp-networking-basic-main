@@ -105,7 +105,7 @@ public class Player : MonoBehaviour
     public void FixedTime()
     {
         ProcessInputs();
-        ServerSend.PlayerTransform(this);
+        SendMessages.PlayerTransform(this);
     }
 
     public void ProcessInputs()
@@ -129,7 +129,7 @@ public class Player : MonoBehaviour
             SimulationState state = SimulationState.CurrentSimulationState(inputState, this);
 
             // Send the state back to the client.
-            ServerSend.SendSimulationState(id, state);
+            SendMessages.SendSimulationState(id, state);
 
             //Obtain animation data
             isFiring = (inputState.buttons & Button.Fire1) == Button.Fire1;

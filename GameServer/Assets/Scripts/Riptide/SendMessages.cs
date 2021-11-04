@@ -1,5 +1,5 @@
 ﻿using RiptideNetworking;
-public class ServerSend
+public class SendMessages
 {
     #region Messages
     /// <summary>Sends a player's updated position to all clients.</summary>
