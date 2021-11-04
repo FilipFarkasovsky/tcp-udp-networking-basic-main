@@ -558,8 +558,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 2533f92cf1c81df41b426655d71c3366, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  localPlayerPrefab: {fileID: 746358305052123876, guid: 771f4599d98028948ae5a82de1deb851, type: 3}
-  playerPrefab: {fileID: 2033447657606561636, guid: d4b255f9feb42fb49b103418ae4f983a, type: 3}
 --- !u!4 &772307070
 Transform:
   m_ObjectHideFlags: 0
@@ -879,7 +877,7 @@ MonoBehaviour:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1566324437}
-  m_Enabled: 1
+  m_Enabled: 0
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 9d15fb43f44a43844b32283f55a84827, type: 3}
   m_Name: 
@@ -893,13 +891,14 @@ MonoBehaviour:
   m_GameObject: {fileID: 1566324437}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 6a852bb4668eabc4ebf224446147d785, type: 3}
+  m_Script: {fileID: 11500000, guid: c3f49e0315342e74d9cec2edd9e336ee, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
   ip: 
   port: 26950
-  myId: 0
   isConnected: 0
+  localPlayerPrefab: {fileID: 746358305052123876, guid: 771f4599d98028948ae5a82de1deb851, type: 3}
+  playerPrefab: {fileID: 2033447657606561636, guid: d4b255f9feb42fb49b103418ae4f983a, type: 3}
 --- !u!4 &1566324440
 Transform:
   m_ObjectHideFlags: 0

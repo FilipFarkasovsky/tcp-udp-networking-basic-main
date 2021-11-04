@@ -196,6 +196,7 @@ MonoBehaviour:
   animator: {fileID: 1972619545461935772}
   aimLayer: {fileID: 5335273176843784311}
   handsIK: {fileID: 5335273176039249513}
+  isFiring: 0
   weaponParent: {fileID: 1072644631175722835}
 --- !u!114 &686584917547256761
 MonoBehaviour:
@@ -253,7 +254,7 @@ MonoBehaviour:
   m_GameObject: {fileID: 746358305052123876}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 6a4595639c5162843a2156e4466b0f2f, type: 3}
+  m_Script: {fileID: 11500000, guid: c8a3d335e95e83044b9253b712d4a153, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
   id: 0

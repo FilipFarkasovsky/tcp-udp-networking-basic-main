@@ -3,8 +3,8 @@ using System.Diagnostics;
 
 public class LogicTimer
 {
-    public float FramesPerSecond = Client.tickrate.GetIntValue();
-    public float FixedDelta = Utils.TickInterval();
+    public static float FramesPerSecond = NetworkManager.tickrate.GetIntValue();
+    public static float FixedDelta = Utils.TickInterval();
 
     private double _accumulator;
     private long _lastTime;

@@ -10,7 +10,7 @@ public class PlayerInput : MonoBehaviour
 
     static ConvarRef interp = new ConvarRef("interpolation");
 
-    public PlayerManager playerManager;
+    public Player playerManager;
     public Camera playerCamera;
     public Rigidbody rb;
 
@@ -53,11 +53,14 @@ public class PlayerInput : MonoBehaviour
     {
         consoleUI = FindObjectOfType<ConsoleUI>();
 
-        logicTimer = new LogicTimer(() => FixedTime());
-        logicTimer.Start();
+        //logicTimer = new LogicTimer(() => FixedTime());
+        //logicTimer.Start();
+
+        //Assign local
+        Player.myId = playerManager.id;
     }
 
-    private void FixedTime()
+    private void FixedUpdate()
     {
         // Process inputs
         ProcessInput(inputState);
@@ -103,7 +106,7 @@ public class PlayerInput : MonoBehaviour
                 VerticalAxis = 0f,
                 rotation = playerCamera.transform.rotation,
             };
-            logicTimer.Update();
+            //logicTimer.Update();
             return;
         }
 
@@ -129,7 +132,7 @@ public class PlayerInput : MonoBehaviour
         Vector3 localVelocity = Quaternion.Euler(0 ,transform.rotation.eulerAngles.y - playerCamera.transform.rotation.eulerAngles.y ,0) * new Vector3 (velocity.x, 0, velocity.z);
         playerManager.playerAnimation.IsFiring(Input.GetButton("Fire1"));
         playerManager.playerAnimation.UpdateAnimatorProperties(localVelocity.x/moveSpeed.GetValue(), localVelocity.z/moveSpeed.GetValue(), isGrounded, Input.GetButton("Jump"));
-        logicTimer.Update();
+        //logicTimer.Update();
     }
     
     private void ProcessInput(ClientInputState inputs)
@@ -142,7 +145,7 @@ public class PlayerInput : MonoBehaviour
         rb.velocity = velocity;
 
         CalculateVelocity(inputs);
-        Physics.Simulate(logicTimer.FixedDelta);
+        Physics.Simulate(LogicTimer.FixedDelta);
 
         velocity = rb.velocity;
         rb.isKinematic = true;
@@ -245,7 +248,7 @@ public class PlayerInput : MonoBehaviour
         addspeed = wishspeed - currentspeed;
         if (addspeed <= 0)
             return;
-        accelspeed = accel * logicTimer.FixedDelta * wishspeed;
+        accelspeed = accel * LogicTimer.FixedDelta * wishspeed;
         if (accelspeed > addspeed)
             accelspeed = addspeed;
 
@@ -261,7 +264,7 @@ public class PlayerInput : MonoBehaviour
         if (addspeed <= 0)
             return;
 
-        accelspeed = accel * wishspeed * logicTimer.FixedDelta;
+        accelspeed = accel * wishspeed * LogicTimer.FixedDelta;
 
         if (accelspeed > addspeed)
             accelspeed = addspeed;
@@ -281,7 +284,7 @@ public class PlayerInput : MonoBehaviour
         if (isGrounded)
         {
             control = speed < runAcceleration.GetValue() ? runAcceleration.GetValue() : speed;
-            drop += control * friction.GetValue() * logicTimer.FixedDelta * t;
+            drop += control * friction.GetValue() * LogicTimer.FixedDelta * t;
         }
 
         newspeed = speed - drop;
@@ -296,12 +299,12 @@ public class PlayerInput : MonoBehaviour
 
     private void SendInputToServer()
     {
-        ClientSend.PlayerInput(inputState);
+        SendMessages.PlayerInput(inputState);
     }
 
     private void OnApplicationQuit()
     {
-        logicTimer.Stop();
+        //logicTimer.Stop();
     }
 
     private void setPlayerToSimulationState(SimulationState state)
@@ -352,7 +355,6 @@ public class PlayerInput : MonoBehaviour
             // Show warning about misprediction
             Debug.LogWarning("Client misprediction with a difference of " + difference + " at frame " + serverSimulationState.simulationFrame + ".");
             DebugScreen.mispredictions++;
-            DebugScreen.mispredictionsPerSec++;
 
             // Set the player's position to match the server's state. 
             setPlayerToSimulationState(serverSimulationState);

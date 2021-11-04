@@ -9,6 +9,7 @@ public class PlayerAnimation : MonoBehaviour
     public bool isFiring;
     private Weapon weapon;
     public Transform weaponParent;
+    
     private void Start(){
         Weapon existingWeapon = GetComponentInChildren<Weapon>();
         EquipWeapon(existingWeapon);

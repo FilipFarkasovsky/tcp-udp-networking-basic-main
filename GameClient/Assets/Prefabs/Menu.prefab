@@ -1224,9 +1224,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: ded194d42db56b14ca45939d48f9c0aa, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  startMenu: {fileID: 5217122633791140984}
   usernameField: {fileID: 5212201057172974990}
   adressField: {fileID: 5327571959969315502}
+  connectScreen: {fileID: 5217122633791140984}
 --- !u!1 &8268952779162155277
 GameObject:
   m_ObjectHideFlags: 0

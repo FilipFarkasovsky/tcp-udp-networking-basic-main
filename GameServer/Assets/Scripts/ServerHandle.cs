@@ -1,46 +1,42 @@
 ﻿using UnityEngine;
+using RiptideNetworking;
 
 public class ServerHandle
 {
-    public static void WelcomeReceived(int _fromClient, Packet _packet)
+    [MessageHandler((ushort)ClientToServerId.playerName)]
+    public static void PlayerName(ushort fromClientId, Message message)
     {
-        int _clientIdCheck = _packet.ReadInt();
-        string _username = _packet.ReadString();
-
-        Debug.Log($"{Server.clients[_fromClient].tcp.socket.Client.RemoteEndPoint} connected successfully and is now player {_fromClient}.");
-        if (_fromClient != _clientIdCheck)
-        {
-            Debug.Log($"Player \"{_username}\" (ID: {_fromClient}) has assumed the wrong client ID ({_clientIdCheck})!");
-        }
-        Server.clients[_fromClient].SendIntoGame(_username);
+        Player.Spawn(fromClientId, message.GetString());
     }
 
-    public static void PlayerInput(int _fromClient, Packet _packet)
+    [MessageHandler((ushort)ClientToServerId.playerInput)]
+    public static void PlayerInput(ushort _fromClient, Message message)
     {
         ClientInputState inputState = new ClientInputState();
 
-        inputState.tick = _packet.ReadInt();
-        inputState.lerpAmount = _packet.ReadFloat();
-        inputState.simulationFrame = _packet.ReadInt();
+        inputState.tick = message.GetInt();
+        inputState.lerpAmount = message.GetFloat();
+        inputState.simulationFrame = message.GetInt();
 
-        inputState.buttons = _packet.ReadInt();
+        inputState.buttons = message.GetInt();
 
-        inputState.HorizontalAxis = _packet.ReadFloat();
-        inputState.VerticalAxis = _packet.ReadFloat();
-        inputState.rotation = _packet.ReadQuaternion();
+        inputState.HorizontalAxis = message.GetFloat();
+        inputState.VerticalAxis = message.GetFloat();
+        inputState.rotation = message.GetQuaternion();
 
-        if (!Server.clients[_fromClient].player)
+        if (!Player.List.TryGetValue(_fromClient, out Player player))
             return;
 
-        Server.clients[_fromClient].player.AddInput(inputState);
+        player.AddInput(inputState);
     }
 
-    public static void PlayerConvar(int _fromClient, Packet _packet)
+    [MessageHandler((ushort)ClientToServerId.playerConvar)]
+    public static void PlayerConvar(ushort _fromClient, Message message)
     {
-        string name = _packet.ReadString();
-        float requestedValue = _packet.ReadFloat();
+        string name = message.GetString();
+        float requestedValue = message.GetFloat();
 
-        if (!Server.clients[_fromClient].player)
+        if (!Player.List.TryGetValue(_fromClient, out Player player))
             return;
 
         //Check if admin

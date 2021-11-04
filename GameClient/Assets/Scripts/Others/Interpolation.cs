@@ -52,10 +52,6 @@ public class Interpolation : MonoBehaviour
 
         current = new TransformUpdate(currentTick, Time.time, Time.time, transform.position, transform.position, transform.rotation, transform.rotation);
     }
-
-    public void What(){
-        Debug.Log(futureTransformUpdates.Count);
-    }
     private void Update()
     {
         if (Sync)

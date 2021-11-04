@@ -38,7 +38,7 @@ RenderSettings:
   m_ReflectionIntensity: 1
   m_CustomReflection: {fileID: 0}
   m_Sun: {fileID: 705507994}
-  m_IndirectSpecularColor: {r: 0, g: 0, b: 0, a: 1}
+  m_IndirectSpecularColor: {r: 0, g: 0.99999905, b: 0.99999905, a: 1}
   m_UseRadianceAmbientProbe: 0
 --- !u!157 &3
 LightmapSettings:
@@ -470,7 +470,6 @@ GameObject:
   m_Component:
   - component: {fileID: 1951926042}
   - component: {fileID: 1951926041}
-  - component: {fileID: 1951926040}
   m_Layer: 0
   m_Name: NetworkManager
   m_TagString: Untagged
@@ -478,18 +477,6 @@ GameObject:
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
   m_IsActive: 1
---- !u!114 &1951926040
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1951926039}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: fdaa1a269c3bd974aa7bbcd3816363a8, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
 --- !u!114 &1951926041
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -503,6 +490,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   tick: 0
+  port: 26950
+  maxClientCount: 30
   playerPrefab: {fileID: 4573160584066692170, guid: b94acc0b282d9de488ce1eaba52c7216, type: 3}
 --- !u!4 &1951926042
 Transform:

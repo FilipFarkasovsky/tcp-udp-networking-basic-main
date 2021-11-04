@@ -1,8 +1,11 @@
 ﻿using System.Collections.Generic;
 using UnityEngine;
+using RiptideNetworking;
 
 public class Player : MonoBehaviour
 {
+    public static Dictionary<ushort, Player> List { get; private set; } = new Dictionary<ushort, Player>();
+
     static Convar moveSpeed = new Convar("sv_movespeed", 6.35f, "Movement speed for the player", Flags.NETWORK);
     static Convar runAcceleration = new Convar("sv_accelerate", 14f, "Acceleration for the player when moving", Flags.NETWORK);
     static Convar airAcceleration = new Convar("sv_airaccelerate", 12f, "Air acceleration for the player", Flags.NETWORK);
@@ -18,7 +21,7 @@ public class Player : MonoBehaviour
     public float checkRadius;
 
     [HideInInspector]
-    public int id;
+    public ushort id;
     [HideInInspector]
     public string username;
     [HideInInspector]
@@ -31,21 +34,36 @@ public class Player : MonoBehaviour
     private int lastFrame;
     private Queue<ClientInputState> clientInputs = new Queue<ClientInputState>();
 
-    LogicTimer logicTimer;
+    static LogicTimer logicTimer;
 
     public bool isFiring;
     public float lateralSpeed;
     public float forwardSpeed;
     public bool jumping;
 
-
-    // Set corresponding id and name
-    public void Initialize(int _id, string _username)
+    //-----------
+    /// <summary>Sends a player's info to the given client.</summary>
+    /// <param name="toClient">The client to send the message to.</param>
+    public void SendSpawn(ushort toClient)
     {
-        id = _id;
-        username = _username;
+        NetworkManager.Singleton.Server.Send(GetSpawnData(Message.Create(MessageSendMode.reliable, (ushort)ServerToClientId.spawnPlayer)), toClient);
+    }
+    /// <summary>Sends a player's info to all clients.</summary>
+    private void SendSpawn()
+    {
+        NetworkManager.Singleton.Server.SendToAll(GetSpawnData(Message.Create(MessageSendMode.reliable, (ushort)ServerToClientId.spawnPlayer)));
     }
 
+    private Message GetSpawnData(Message message)
+    {
+        message.Add(id);
+        message.Add(username);
+        message.Add(transform.position);
+        return message;
+    }
+
+
+    //-----------
     private void Awake()
     {
         rb.freezeRotation = true;
@@ -53,6 +71,21 @@ public class Player : MonoBehaviour
         lastFrame = 0;
     }
 
+   private void OnDestroy()
+    {
+        List.Remove(id);
+    }
+
+    public static void Spawn(ushort id, string username)
+    {
+        Player player = Instantiate(NetworkManager.Singleton.PlayerPrefab, new Vector3(0f, 1f, 0f), Quaternion.identity).GetComponent<Player>();
+        player.name = $"Player {id} ({(username == "" ? "Guest" : username)})";
+        player.id = id;
+        player.username = username;
+
+        player.SendSpawn();
+        List.Add(player.id, player);
+    }
     private void Start()
     {
         logicTimer = new LogicTimer(() => FixedTime());
@@ -71,12 +104,6 @@ public class Player : MonoBehaviour
 
     public void FixedTime()
     {
-        if(!Server.isActive)
-        {
-            lastFrame = 0;
-            return;
-        }
-
         ProcessInputs();
         ServerSend.PlayerTransform(this);
     }
@@ -295,5 +322,11 @@ public class Player : MonoBehaviour
     public void AddInput(ClientInputState _inputState)
     {
         clientInputs.Enqueue(_inputState);
+    }
+
+    [MessageHandler((ushort)ClientToServerId.playerName)]
+    public static void PlayerName(ushort fromClientId, Message message)
+    {
+        Spawn(fromClientId, message.GetString());
     }
 }

@@ -4,7 +4,7 @@ using UnityEngine;
 
 public class LagCompensation
 {
-    public static List<PlayerRecord>[] playerRecords = new List<PlayerRecord>[Server.MaxPlayers + 1];
+    public static List<PlayerRecord>[] playerRecords = new List<PlayerRecord>[NetworkManager.Singleton.maxClientCount + 1];
 
     static Convar maxLagComp = new Convar("sv_maxunlag", 1, "Maximum time limit for Player records", Flags.SERVER, 0f, 5f);
 
@@ -28,39 +28,38 @@ public class LagCompensation
     }
 
     // Backup, backtrack, do something and restore
-    public static void Backtrack(int _client, int _tick, float _lerpAmount = 0)
+    public static void Backtrack(ushort _client, int _tick, float _lerpAmount = 0)
     {
-        if (!Server.clients[_client].player)
+        if (!Player.List.TryGetValue(_client, out Player localPlayer))
             return;
-
+        
         // Backtrack and backup the players
-        PlayerRecord[] backup = new PlayerRecord[Server.MaxPlayers + 1];
-        for (int i = 1; i <= Server.MaxPlayers; i++)
+        PlayerRecord[] backup = new PlayerRecord[NetworkManager.Singleton.maxClientCount + 1];
+        for (ushort i = 1; i <= NetworkManager.Singleton.maxClientCount; i++)
         {
             // Dont backtrack the player who requested the backtack
             if (i == _client)
                 continue;
 
-            if (!Server.clients[i].player) 
+            if (!Player.List.TryGetValue(i, out Player player)) 
                 continue;
 
-            backup[i] = Backup(Server.clients[i].player);
-            BacktrackPlayer(Server.clients[i].player, _tick, _lerpAmount);
+            backup[i] = Backup(player);
+            BacktrackPlayer(player, _tick, _lerpAmount);
         }
 
         // Do something
 
 
         // Restore
-        for (int i = 1; i <= Server.MaxPlayers; i++)
+        for (ushort i = 1; i <= NetworkManager.Singleton.maxClientCount; i++)
         {
             if (i == _client)
                 continue;
 
-            if (!Server.clients[i].player || backup[i] == new PlayerRecord())
+            if (!Player.List.TryGetValue(i, out Player player) || backup[i] == new PlayerRecord())
                 continue;
-
-            Restore(Server.clients[i].player, backup[i]);
+            Restore(player, backup[i]);
         }
     }
 
@@ -146,34 +145,34 @@ public class LagCompensation
     // Adds new player records and deletes old ones
     public static void UpdatePlayerRecords()
     {
-        for (int i = 1; i <= Server.MaxPlayers; i++)
+        for (ushort i = 1; i <= NetworkManager.Singleton.maxClientCount; i++)
         {
-            if (Server.clients[i] == null || Server.clients[i].player == null)
+            if (!Player.List.TryGetValue(i, out Player player))
                 continue;
             
             // Add a record this tick
-            AddPlayerRecord(Server.clients[i].player);
+            AddPlayerRecord(player);
         }
 
         // Loop through every player
-        for (int i = 1; i <= Server.MaxPlayers; i++)
+        for (ushort i = 1; i <= NetworkManager.Singleton.maxClientCount; i++)
         {
             // Player doesnt exist, so clear all records
-            if (Server.clients[i].player == null)
+            if (!Player.List.TryGetValue(i, out Player player))
             {
                 playerRecords[i].Clear();
                 continue;
             }
 
             // Loop through every record
-            for (int j = 0; j < playerRecords[i].Count; j++)
+            for (ushort j = 0; j < playerRecords[i].Count; j++)
             {
                 // Check if the playerRecord doesnt exist or if the element doesnt exist
                 if (playerRecords[i] == null || playerRecords[i].ElementAt(j) == null)
                     continue;
 
                 // Check difference with the server
-                if (NetworkManager.instance.tick - playerRecords[i].ElementAt(j).playerTick > Utils.timeToTicks(maxLagComp.GetValue()))
+                if (NetworkManager.Singleton.tick - playerRecords[i].ElementAt(j).playerTick > Utils.timeToTicks(maxLagComp.GetValue()))
                 {
                     // Remove if the difference is to big
                     playerRecords[i].RemoveAt(j);

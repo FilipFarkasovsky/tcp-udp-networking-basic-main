@@ -171,9 +171,6 @@ public class Convar
 
     public void SendValue()
     {
-        if (!Server.isActive)
-            return;
-
         ServerSend.SendConvar(this);
     }
 

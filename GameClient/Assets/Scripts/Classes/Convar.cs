@@ -199,10 +199,10 @@ public class Convar
 
     public void SendRequest(float _value)
     {
-        if (!Client.instance.isConnected)
+        if (!NetworkManager.Singleton.Client.IsConnected)
             return;
 
-        ClientSend.PlayerConvar(this, _value);
+        SendMessages.PlayerConvar(this, _value);
     }
 
     public void ReceiveResponse(float _value)
