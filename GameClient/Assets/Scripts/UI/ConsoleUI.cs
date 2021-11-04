@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using System.Text.RegularExpressions;
 using UnityEngine;
 using UnityEngine.UI;
+using TMPro;
 
 public class ConsoleUI : MonoBehaviour
 {
@@ -624,20 +625,21 @@ public class ConsoleUI : MonoBehaviour
     {
         GameObject text = Instantiate(textSample);
         text.transform.SetParent(textSample.transform.parent);
-        text.GetComponent<Text>().text = _string;
+        text.GetComponent<TextMeshProUGUI>().text = _string;
+        text.transform.localScale = textSample.transform.localScale;
         switch (color)
         {
             case 0:
-                text.GetComponent<Text>().color = Color.white;
+                text.GetComponent<TextMeshProUGUI>().color = Color.white;
                 break;
             case 1:
-                text.GetComponent<Text>().color = Color.yellow;
+                text.GetComponent<TextMeshProUGUI>().color = Color.yellow;
                 break;
             case 2:
-                text.GetComponent<Text>().color = Color.red;
+                text.GetComponent<TextMeshProUGUI>().color = Color.red;
                 break;
             case 3: 
-                text.GetComponent<Text>().color = Color.green;
+                text.GetComponent<TextMeshProUGUI>().color = Color.green;
                 break;
         }
         text.SetActive(true);
