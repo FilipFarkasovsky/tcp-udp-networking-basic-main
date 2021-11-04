@@ -130,6 +130,30 @@ PrefabInstance:
   m_Modification:
     m_TransformParent: {fileID: 0}
     m_Modifications:
+    - target: {fileID: 1703424441888525760, guid: 72a21075542bab547a9b207f41f5c3b3, type: 3}
+      propertyPath: m_AnchorMax.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 1703424441888525760, guid: 72a21075542bab547a9b207f41f5c3b3, type: 3}
+      propertyPath: m_AnchorMin.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 1703424441888525760, guid: 72a21075542bab547a9b207f41f5c3b3, type: 3}
+      propertyPath: m_SizeDelta.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 1703424441888525760, guid: 72a21075542bab547a9b207f41f5c3b3, type: 3}
+      propertyPath: m_SizeDelta.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 1703424441888525760, guid: 72a21075542bab547a9b207f41f5c3b3, type: 3}
+      propertyPath: m_AnchoredPosition.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 1703424441888525760, guid: 72a21075542bab547a9b207f41f5c3b3, type: 3}
+      propertyPath: m_AnchoredPosition.y
+      value: 0
+      objectReference: {fileID: 0}
     - target: {fileID: 5191068452958842569, guid: 72a21075542bab547a9b207f41f5c3b3, type: 3}
       propertyPath: m_Pivot.x
       value: 0
@@ -217,10 +241,6 @@ PrefabInstance:
     - target: {fileID: 5191068452958842573, guid: 72a21075542bab547a9b207f41f5c3b3, type: 3}
       propertyPath: m_Name
       value: Console
-      objectReference: {fileID: 0}
-    - target: {fileID: 5191068452958842573, guid: 72a21075542bab547a9b207f41f5c3b3, type: 3}
-      propertyPath: m_IsActive
-      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 5191068453402476696, guid: 72a21075542bab547a9b207f41f5c3b3, type: 3}
       propertyPath: m_SizeDelta.y
@@ -896,7 +916,6 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   ip: 
   port: 26950
-  isConnected: 0
   localPlayerPrefab: {fileID: 746358305052123876, guid: 771f4599d98028948ae5a82de1deb851, type: 3}
   playerPrefab: {fileID: 2033447657606561636, guid: d4b255f9feb42fb49b103418ae4f983a, type: 3}
 --- !u!4 &1566324440
@@ -1162,25 +1181,9 @@ PrefabInstance:
   m_Modification:
     m_TransformParent: {fileID: 0}
     m_Modifications:
-    - target: {fileID: 5217122633098509776, guid: 481dd95ff0f175749b089c122914ad5e, type: 3}
-      propertyPath: m_Enabled
-      value: 1
-      objectReference: {fileID: 0}
-    - target: {fileID: 5217122633098509777, guid: 481dd95ff0f175749b089c122914ad5e, type: 3}
-      propertyPath: m_CullTransparentMesh
-      value: 1
-      objectReference: {fileID: 0}
-    - target: {fileID: 5217122633098509779, guid: 481dd95ff0f175749b089c122914ad5e, type: 3}
-      propertyPath: m_IsActive
-      value: 1
-      objectReference: {fileID: 0}
     - target: {fileID: 5217122633857313480, guid: 481dd95ff0f175749b089c122914ad5e, type: 3}
       propertyPath: m_Name
       value: Menu
-      objectReference: {fileID: 0}
-    - target: {fileID: 5217122633857313480, guid: 481dd95ff0f175749b089c122914ad5e, type: 3}
-      propertyPath: m_IsActive
-      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 5217122633857313493, guid: 481dd95ff0f175749b089c122914ad5e, type: 3}
       propertyPath: m_Pivot.x
@@ -1265,10 +1268,6 @@ PrefabInstance:
     - target: {fileID: 5217122633857313493, guid: 481dd95ff0f175749b089c122914ad5e, type: 3}
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 5217122634170176106, guid: 481dd95ff0f175749b089c122914ad5e, type: 3}
-      propertyPath: m_IsActive
-      value: 1
       objectReference: {fileID: 0}
     m_RemovedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 481dd95ff0f175749b089c122914ad5e, type: 3}
