@@ -131,7 +131,7 @@ public class Player : MonoBehaviour
 
             //Obtain animation data
             isFiring = (inputState.buttons & Button.Fire1) == Button.Fire1;
-            Vector3 localVelocity = Quaternion.Euler(0 ,transform.rotation.eulerAngles.y - head.transform.rotation.eulerAngles.y ,0) * new Vector3 (velocity.x, 0, velocity.z);
+            Vector3 localVelocity = Quaternion.Euler(0 ,- head.transform.rotation.eulerAngles.y ,0) * new Vector3 (velocity.x, 0, velocity.z);
             lateralSpeed = localVelocity.x/moveSpeed.GetValue();
             forwardSpeed =  localVelocity.z/moveSpeed.GetValue();
             jumping = (inputState.buttons & Button.Jump) == Button.Jump;
