@@ -44,7 +44,6 @@ public class NetworkManager : MonoBehaviour
 
     public GameObject PlayerPrefab => playerPrefab;
     public Server Server { get; private set; }
-    static LogicTimer logicTimer;
 
     public Convar tickrate = new Convar("sv_tickrate", 32, "Ticks per second", Flags.NETWORK, 1, 128);
 
@@ -56,7 +55,6 @@ public class NetworkManager : MonoBehaviour
 
     private void Start()
     {
-
         Application.targetFrameRate = tickrate.GetIntValue();
         QualitySettings.vSyncCount = 0;
 
@@ -73,19 +71,11 @@ public class NetworkManager : MonoBehaviour
         Server.ClientConnected += NewPlayerConnected;
         Server.ClientDisconnected += PlayerLeft;
 
-        logicTimer = new LogicTimer(() => FixedTime());
-        logicTimer.Start();
-
         LagCompensation.Start(maxClientCount);
         Server.Start(port, maxClientCount);
     }
 
-    void Update()
-    {
-        logicTimer.Update();
-    }
-
-    private void FixedTime()
+    private void FixedUpdate()
     {
         Server.Tick();
         Application.targetFrameRate = tickrate.GetIntValue();
@@ -108,7 +98,6 @@ public class NetworkManager : MonoBehaviour
     private void OnApplicationQuit()
     {
         Server.Stop();
-        logicTimer.Stop();
         LagCompensation.Stop();
 
         Server.ClientConnected -= NewPlayerConnected;

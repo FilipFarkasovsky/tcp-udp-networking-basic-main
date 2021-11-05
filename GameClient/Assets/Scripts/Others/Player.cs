@@ -98,7 +98,6 @@ public class Player : MonoBehaviour
             if (serverTick > GlobalVariables.serverTick)
                 GlobalVariables.serverTick = serverTick;
 
-            Debug.Log("INTE");
             player.interpolation.NewUpdate(serverTick, position);
             if(player.cameraInterpolation)player.cameraInterpolation.NewUpdate(serverTick, _rotation);
             player.playerAnimation.IsFiring(_isFiring);

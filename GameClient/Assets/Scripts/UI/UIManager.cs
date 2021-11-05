@@ -32,7 +32,7 @@ public class UIManager : MonoBehaviour
         usernameField.interactable = false;
         adressField.interactable = false;
         if(string.IsNullOrEmpty(adressField.text)){
-            NetworkManager.Singleton.ip = "192.168.0.105";
+            NetworkManager.Singleton.ip = NetworkManager.Singleton.ip;
         }
         else {
             NetworkManager.Singleton.ip = adressField.text;
@@ -43,7 +43,9 @@ public class UIManager : MonoBehaviour
 
         public void BackToMain()
     {
+        Cursor.lockState = CursorLockMode.Confined;
         usernameField.interactable = true;
+        adressField.interactable = true;
         connectScreen.SetActive(true);
     }
 

@@ -35,19 +35,9 @@ public class DebugScreen : MonoBehaviour
     private static int packetsUpPerSec;
     private static int packetsDownPerSec;
 
-    static LogicTimer logicTimer;
-
-    void Start()
-    {
-
-        logicTimer = new LogicTimer(() => FixedTime());
-        logicTimer.Start();
-    }
-
     // Update is called once per frame
     void Update()
     {
-        logicTimer.Update();
         time += Time.deltaTime;
 
         frameCount++;
@@ -63,6 +53,45 @@ public class DebugScreen : MonoBehaviour
             packetsUpPerSec =  Mathf.RoundToInt(packetsUp / time);
             packetsDownPerSec = Mathf.RoundToInt(packetsDown / time);
             time -= 1f;
+            frameCount = 0;
+            bytesUp = 0;
+            bytesDown = 0;
+            packetsUp = 0;
+            packetsDown = 0;
+        }
+
+
+
+
+
+        FPS.text = $"{1000f/framesPerSec:#.#} ms {framesPerSec} FPS";
+        Tickrate.text = $"tickrate: {1 / Utils.TickInterval()}/s {Utils.TickInterval()*1000f} ms";
+        Ping.text = $"ping: {ping} m/s";
+        Mispred.text = $"mispredictions: {mispredictions} total";
+        BytesUp.text = $"byteUp: {bytesUpPerSec}/s";
+        BytesDown.text = $"byteDown: {bytesDownPerSec}/s";
+        PacketsUp.text = $"byteUp: {packetsUpPerSec}/s";
+        PacketsDown.text = $"byteDown: {packetsDownPerSec}/s";
+        Gos.text = $"gos active: {GameObject.FindObjectsOfType(typeof(MonoBehaviour)).Length} gos total: {1}";
+        Ram.text = $"ram: {0} mb";
+
+        if(1000f/framesPerSec >= Utils.TickInterval() * 1000f){
+            Mispred.color = Color.red;
+        }
+        else{
+            Mispred.color = Color.white;
+        }
+
+        
+        if(time >= 1f){
+            framesPerSec = Mathf.RoundToInt(frameCount / time);
+            bytesUpPerSec =  Mathf.RoundToInt(bytesUp / time);
+            bytesDownPerSec = Mathf.RoundToInt(bytesDown / time);
+            packetsUpPerSec =  Mathf.RoundToInt(packetsUp / time);
+            packetsDownPerSec = Mathf.RoundToInt(packetsDown / time);
+
+            time -= 1f;
+
             frameCount = 0;
             bytesUp = 0;
             bytesDown = 0;

@@ -78,6 +78,7 @@ public class Interpolation : MonoBehaviour
 
                 if (update.tick <= last?.tick)
                 {
+                    futureTransformUpdates.Remove(update);
                     continue;
                 }
 

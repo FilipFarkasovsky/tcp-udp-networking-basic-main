@@ -113,6 +113,8 @@ public class NetworkManager : MonoBehaviour
 
     private void DidDisconnect(object sender, EventArgs e)
     {
+        Destroy(Player.list[Client.Id].gameObject);
         UIManager.Singleton.BackToMain();
+        
     }
 }

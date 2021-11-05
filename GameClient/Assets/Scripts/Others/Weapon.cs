@@ -12,7 +12,7 @@ public class Weapon : MonoBehaviour
     public ParticleSystem muzzleFlash;
     public ParticleSystem hitEffect;
     public TrailRenderer tracerEffect;
-    public int fireRate = 20;
+    public ushort fireRate = 20;
     [Header("Sound references")]
     public AudioClip gunFire;
 

@@ -20,11 +20,8 @@ public class Player : MonoBehaviour
     public GameObject groundCheck;
     public float checkRadius;
 
-    [HideInInspector]
     public ushort id;
-    [HideInInspector]
     public string username;
-    [HideInInspector]
     public int tick = 0;
 
     [HideInInspector]
@@ -34,7 +31,7 @@ public class Player : MonoBehaviour
     private int lastFrame;
     private Queue<ClientInputState> clientInputs = new Queue<ClientInputState>();
 
-    static LogicTimer logicTimer;
+    //static LogicTimer logicTimer;
 
     public bool isFiring;
     public float lateralSpeed;
@@ -69,6 +66,7 @@ public class Player : MonoBehaviour
         rb.freezeRotation = true;
         rb.isKinematic = true;
         lastFrame = 0;
+        //logicTimer = new LogicTimer(() => FixedTime());
     }
 
    private void OnDestroy()
@@ -88,21 +86,21 @@ public class Player : MonoBehaviour
     }
     private void Start()
     {
-        logicTimer = new LogicTimer(() => FixedTime());
-        logicTimer.Start();
+        //logicTimer.Start();
     }
     private void Update()
     {
-        logicTimer.Update();
+        //logicTimer.Update();
     }
 
     public void Destroy()
     {
-        logicTimer.Stop();
+        //logicTimer.Stop();
         Destroy(gameObject);
     }
 
-    public void FixedTime()
+    
+    void FixedUpdate()
     {
         ProcessInputs();
         SendMessages.PlayerTransform(this);
@@ -114,7 +112,7 @@ public class Player : MonoBehaviour
         ClientInputState inputState = null;
 
         // Obtain CharacterInputState's from the queue. 
-        while (clientInputs.Count > 0 && (inputState = clientInputs.Dequeue()) != null)
+        while (clientInputs.Count > 0  && (inputState = clientInputs.Dequeue()) != null)
         {
             // Player is sending simulation frames that are in the past, dont process them
             if (inputState.simulationFrame <= lastFrame)
@@ -153,7 +151,7 @@ public class Player : MonoBehaviour
         rb.velocity = velocity;
 
         CalculateVelocity(inputs);
-        Physics.Simulate(logicTimer.FixedDelta);
+        Physics.Simulate(LogicTimer.FixedDelta);
 
         velocity = rb.velocity;
         rb.isKinematic = true;
@@ -270,7 +268,7 @@ public class Player : MonoBehaviour
         addspeed = wishspeed - currentspeed;
         if (addspeed <= 0)
             return;
-        accelspeed = accel * logicTimer.FixedDelta * wishspeed;
+        accelspeed = accel * LogicTimer.FixedDelta * wishspeed;
         if (accelspeed > addspeed)
             accelspeed = addspeed;
 
@@ -286,7 +284,7 @@ public class Player : MonoBehaviour
         if (addspeed <= 0)
             return;
 
-        accelspeed = accel * wishspeed * logicTimer.FixedDelta;
+        accelspeed = accel * wishspeed * LogicTimer.FixedDelta;
 
         if (accelspeed > addspeed)
             accelspeed = addspeed;
@@ -306,7 +304,7 @@ public class Player : MonoBehaviour
         if (isGrounded)
         {
             control = speed < runAcceleration.GetValue() ? runAcceleration.GetValue() : speed;
-            drop += control * friction.GetValue() * logicTimer.FixedDelta * t;
+            drop += control * friction.GetValue() * LogicTimer.FixedDelta * t;
         }
 
         newspeed = speed - drop;
@@ -322,11 +320,5 @@ public class Player : MonoBehaviour
     public void AddInput(ClientInputState _inputState)
     {
         clientInputs.Enqueue(_inputState);
-    }
-
-    [MessageHandler((ushort)ClientToServerId.playerName)]
-    public static void PlayerName(ushort fromClientId, Message message)
-    {
-        Spawn(fromClientId, message.GetString());
     }
 }

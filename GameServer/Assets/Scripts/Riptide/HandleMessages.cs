@@ -27,7 +27,8 @@ public class HandleMessages
         if (!Player.List.TryGetValue(_fromClient, out Player player))
             return;
 
-        player.AddInput(inputState);
+       // if(inputState.HorizontalAxis>0.5)
+            player.AddInput(inputState);
     }
 
     [MessageHandler((ushort)ClientToServerId.playerConvar)]
