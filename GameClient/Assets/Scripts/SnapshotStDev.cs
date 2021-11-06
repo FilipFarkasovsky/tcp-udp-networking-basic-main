@@ -192,7 +192,21 @@ public class SnapshotStDev : MonoBehaviour
 
     [SerializeField, Range(0, 0.4f)] float random;
 
-    void ServerSnapshot()
+    //void ServerSnapshot()
+    //{
+    //    if (_lastSnapshot + Time.fixedDeltaTime < Time.time)
+    //    {
+    //        _lastSnapshot = Time.time;
+    //        _cNetworkSimQueue.Enqueue(new Snapshot
+    //        {
+    //            Time = _lastSnapshot,
+    //            Position = Server.transform.position,
+    //            DeliveryTime = Time.time + random
+    //        });
+    //    }
+    //}
+
+    public void ServerSnapshot()
     {
         if (_lastSnapshot + Time.fixedDeltaTime < Time.time)
         {
@@ -201,18 +215,8 @@ public class SnapshotStDev : MonoBehaviour
             {
                 Time = _lastSnapshot,
                 Position = Server.transform.position,
-                DeliveryTime = Time.time + random
+                DeliveryTime = Time.time
             });
         }
-    }
-
-    public void ServerSnapshot(float time, float deliveryTime)
-    {
-        _cNetworkSimQueue.Enqueue(new Snapshot
-        {
-            Time = time,
-            Position = Server.transform.position,
-            DeliveryTime = deliveryTime
-        });
     }
 }

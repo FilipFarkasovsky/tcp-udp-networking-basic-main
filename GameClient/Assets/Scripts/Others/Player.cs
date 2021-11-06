@@ -99,7 +99,7 @@ public class Player : MonoBehaviour
             //player.simpleInterpolation.NewUpdate(serverTick, position);
             Debug.Log(serverTick - GlobalVariables.clientTick);
             player.snapshotStDev.Server.transform.position = position;
-            player.snapshotStDev.ServerSnapshot(Time.time + 32,Time.time+ Utils.ticksToTime(serverTick - GlobalVariables.clientTick) );
+            player.snapshotStDev.ServerSnapshot();
             if(player.cameraInterpolation)player.cameraInterpolation.NewUpdate(serverTick, _rotation);
         }
     }
