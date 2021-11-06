@@ -83,9 +83,6 @@ public class SnapshotStDev : MonoBehaviour
 
     void Update()
     {
-        //ServerMovement();
-        //ServerSnapshot();
-
         ClientUpdateInterpolationTime();
         ClientReceiveDataFromServer();
         ClientRenderLatestPostion();
@@ -181,30 +178,7 @@ public class SnapshotStDev : MonoBehaviour
         }
     }
 
-    void ServerMovement()
-    {
-        Vector3 pos;
-        pos = Server.transform.position;
-        pos.x = Mathf.PingPong(Time.time * 5, 10f) - 5f;
-
-        Server.transform.position = pos;
-    }
-
     [SerializeField, Range(0, 0.4f)] float random;
-
-    //void ServerSnapshot()
-    //{
-    //    if (_lastSnapshot + Time.fixedDeltaTime < Time.time)
-    //    {
-    //        _lastSnapshot = Time.time;
-    //        _cNetworkSimQueue.Enqueue(new Snapshot
-    //        {
-    //            Time = _lastSnapshot,
-    //            Position = Server.transform.position,
-    //            DeliveryTime = Time.time + random
-    //        });
-    //    }
-    //}
 
     public void ServerSnapshot()
     {

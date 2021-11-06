@@ -97,7 +97,6 @@ public class Player : MonoBehaviour
 
             //player.interpolation.NewUpdate(serverTick, position);
             //player.simpleInterpolation.NewUpdate(serverTick, position);
-            Debug.Log(serverTick - GlobalVariables.clientTick);
             player.snapshotStDev.Server.transform.position = position;
             player.snapshotStDev.ServerSnapshot();
             if(player.cameraInterpolation)player.cameraInterpolation.NewUpdate(serverTick, _rotation);
