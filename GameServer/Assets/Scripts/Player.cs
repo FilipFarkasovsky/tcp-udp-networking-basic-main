@@ -104,6 +104,7 @@ public class Player : MonoBehaviour
     {
         ProcessInputs();
         SendMessages.PlayerTransform(this);
+        SendMessages.PlayerAnimation(this);
     }
 
     public void ProcessInputs()

@@ -56,6 +56,25 @@ public class SendMessages
         NetworkManager.Singleton.Server.SendToAll(message, _player.id);
     }
 
+    /// <summary>Sends a player's animation properties to all clients except to the client himself (to avoid overwriting the player's simulation state).</summary>
+    /// <param name="_player">The player whose position and rotation to update.</param>
+    public static void PlayerAnimation(Player _player)
+    {
+        if (!_player)
+            return;
+
+        Message message = Message.Create(MessageSendMode.unreliable, (ushort)ServerToClientId.playerAnimation);
+
+        message.Add(_player.id);
+        message.Add(_player.isFiring);
+        message.Add(_player.lateralSpeed);
+        message.Add(_player.forwardSpeed);
+        message.Add(_player.isGrounded);
+        message.Add(_player.jumping);
+
+        NetworkManager.Singleton.Server.SendToAll(message, _player.id);
+    }
+
     /// <summary>Sends a player's simulation state.</summary>
     /// <param name="_toClient">The client that should receive the simulation state.</param>
     /// <param name="_simulationState">The simulation state to send.</param>

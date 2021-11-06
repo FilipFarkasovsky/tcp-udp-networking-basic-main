@@ -29,9 +29,16 @@ public class CameraLook : MonoBehaviour
 
     private void Rotation()
     {
-        if (Cursor.lockState != CursorLockMode.Locked)
+        if (Input.GetKey(KeyCode.Escape) && Cursor.lockState == CursorLockMode.None)
+        {
             Cursor.lockState = CursorLockMode.Locked;
-        
+        }
+        else if(Input.GetKey(KeyCode.Escape) && Cursor.lockState == CursorLockMode.Locked)
+        {
+            Cursor.lockState = CursorLockMode.None;
+        }
+
+
         float _mouseVertical = -Input.GetAxis("Mouse Y");
         float _mouseHorizontal = Input.GetAxis("Mouse X");
 

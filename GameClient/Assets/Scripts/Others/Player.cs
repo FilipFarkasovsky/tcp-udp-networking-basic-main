@@ -9,9 +9,12 @@ public class Player : MonoBehaviour
 
     public ushort id;
     public string username;
-    public Interpolation interpolation;
-    public Interpolation cameraInterpolation;
 
+    public Interpolation interpolation;
+    public SimpleInterpolation simpleInterpolation;
+    public SnapshotStDev snapshotStDev;
+
+    public Interpolation cameraInterpolation;
     public PlayerAnimation playerAnimation;
 
     public static void Spawn(ushort id, string username, Vector3 position)
@@ -86,7 +89,28 @@ public class Player : MonoBehaviour
         Vector3 position = message.GetVector3();
         Quaternion _rotation = message.GetQuaternion();
         int serverTick = message.GetInt();
-        
+
+        if (list.TryGetValue(id, out Player player))
+        {
+            if (serverTick > GlobalVariables.serverTick)
+                GlobalVariables.serverTick = serverTick;
+
+            //player.interpolation.NewUpdate(serverTick, position);
+            //player.simpleInterpolation.NewUpdate(serverTick, position);
+            Debug.Log(serverTick - GlobalVariables.clientTick);
+            player.snapshotStDev.Server.transform.position = position;
+            player.snapshotStDev.ServerSnapshot(Time.time + 32,Time.time+ Utils.ticksToTime(serverTick - GlobalVariables.clientTick) );
+            if(player.cameraInterpolation)player.cameraInterpolation.NewUpdate(serverTick, _rotation);
+        }
+    }
+
+    [MessageHandler((ushort)ServerToClientId.playerAnimation)]
+    public static void PlayerAnimation(Message message)
+    {
+        DebugScreen.bytesDown += message.WrittenLength;
+        DebugScreen.packetsDown++;
+
+        ushort id = message.GetUShort();
         bool _isFiring = message.GetBool();
         float _lateralSpeed = message.GetFloat();
         float _forwardSpeed = message.GetFloat();
@@ -95,15 +119,11 @@ public class Player : MonoBehaviour
 
         if (list.TryGetValue(id, out Player player))
         {
-            if (serverTick > GlobalVariables.serverTick)
-                GlobalVariables.serverTick = serverTick;
-
-            player.interpolation.NewUpdate(serverTick, position);
-            if(player.cameraInterpolation)player.cameraInterpolation.NewUpdate(serverTick, _rotation);
             player.playerAnimation.IsFiring(_isFiring);
             player.playerAnimation.UpdateAnimatorProperties(_lateralSpeed, _forwardSpeed, _grounded, _jumping);
         }
     }
+
 
     [MessageHandler((ushort)ServerToClientId.serverSimulationState)]
     public static void SimulationState(Message message)

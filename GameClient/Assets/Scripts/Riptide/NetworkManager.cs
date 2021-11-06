@@ -9,6 +9,7 @@ public enum ServerToClientId : ushort
     playerPosition,
     playerRotation,
     playerTransform,
+    playerAnimation,
     serverSimulationState,
     serverConvar,
     serverTick,

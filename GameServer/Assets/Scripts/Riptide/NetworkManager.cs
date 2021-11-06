@@ -8,6 +8,7 @@ public enum ServerToClientId : ushort
     playerPosition,
     playerRotation,
     playerTransform,
+    playerAnimation,
     serverSimulationState,
     serverConvar,
     serverTick,
@@ -106,6 +107,7 @@ public class NetworkManager : MonoBehaviour
 
     private void NewPlayerConnected(object sender, ServerClientConnectedEventArgs e)
     {
+        Debug.Log("Connected");
         foreach (Player player in Player.List.Values)
         {
             if (player.id != e.Client.Id)
@@ -115,6 +117,7 @@ public class NetworkManager : MonoBehaviour
 
     private void PlayerLeft(object sender, ClientDisconnectedEventArgs e)
     {
+        Debug.Log("disconnected");
         Destroy(Player.List[e.Id].gameObject);
     }
 }

@@ -6,6 +6,7 @@ public class HandleMessages
     [MessageHandler((ushort)ClientToServerId.playerName)]
     public static void PlayerName(ushort fromClientId, Message message)
     {
+        Debug.LogWarning("PES");
         Player.Spawn(fromClientId, message.GetString());
     }
 
@@ -27,7 +28,6 @@ public class HandleMessages
         if (!Player.List.TryGetValue(_fromClient, out Player player))
             return;
 
-       // if(inputState.HorizontalAxis>0.5)
             player.AddInput(inputState);
     }
 
