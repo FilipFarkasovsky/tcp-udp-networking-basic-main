@@ -41,7 +41,7 @@ public class SimpleInterpolation : MonoBehaviour
 
         timeElapsed += Time.deltaTime;
 
-        if(!float.IsInfinity(timeElapsed / timeToReachTarget))
+        //if(!float.IsInfinity(timeElapsed / timeToReachTarget))
             Interpolate(timeElapsed / timeToReachTarget);
     }
 

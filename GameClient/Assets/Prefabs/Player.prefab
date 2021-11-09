@@ -50,9 +50,9 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   id: 0
   username: 
+  snapshotStDev: {fileID: 8853338562028519016}
   interpolation: {fileID: 2033447657606561222}
   simpleInterpolation: {fileID: 2750777293876604067}
-  snapshotStDev: {fileID: 8853338562028519016}
   cameraInterpolation: {fileID: 8067417399293115910}
   playerAnimation: {fileID: 7553815535291750560}
 --- !u!114 &2033447657606561222

@@ -1,6 +1,7 @@
 using UnityEngine;
 using System.Collections.Generic;
 using UnityEngine.SceneManagement;
+using RiptideNetworking;
 
 public class SimpleDS : MonoBehaviour
 {
@@ -24,9 +25,9 @@ public class SimpleDS : MonoBehaviour
 
     #endregion
 
-    struct Inputs
+    public struct Inputs
     {
-        readonly ushort buttons;
+        public readonly ushort buttons;
 
         public Inputs(ushort value) : this() => buttons = value;
 
@@ -164,7 +165,7 @@ public class SimpleDS : MonoBehaviour
 
     bool vsyncToggle = false;
 
-    void ServerUpdate()
+    public void ServerUpdate()
     {
         while (ReceivedServerInputs.Count > 0 && Time.time >= ReceivedServerInputs.Peek().DeliveryTime)
         {
@@ -179,22 +180,24 @@ public class SimpleDS : MonoBehaviour
 
                     ++ServerTick;
 
-                    if (Random.value > PACKET_LOSS)
-                    {
-                        Snapshot snapshot;
-                        snapshot.DeliveryTime = Time.time + RTT;
-                        snapshot.Tick = ServerTick;
-                        snapshot.Position = ServerRb.position;
-                        snapshot.Rotation = ServerRb.rotation;
-                        snapshot.Velocity = ServerRb.velocity;
-                        snapshot.AngularVelocity = ServerRb.angularVelocity;
+                    //if (Random.value > PACKET_LOSS)
+                    //{
+                    //    Snapshot snapshot;
+                    //    snapshot.DeliveryTime = Time.time + RTT;
+                    //    snapshot.Tick = ServerTick;
+                    //    snapshot.Position = ServerRb.position;
+                    //    snapshot.Rotation = ServerRb.rotation;
+                    //    snapshot.Velocity = ServerRb.velocity;
+                    //    snapshot.AngularVelocity = ServerRb.angularVelocity;
 
-                        ReceivedClientSnapshots.Enqueue(snapshot);
-                    }
+                    //    ReceivedClientSnapshots.Enqueue(snapshot);
+                    //}
                 }
             }
         }
     }
+
+
 
     void ClientUpdate()
     {
@@ -213,17 +216,17 @@ public class SimpleDS : MonoBehaviour
 
         PreviousPosition = SimulationSteps[stateSlot].Position;
 
-        if (Random.value > PACKET_LOSS)
-        {
-            inputCmd.DeliveryTime = Time.time + RTT;
-            inputCmd.LastAckedTick = ClientLastAckedTick;
-            inputCmd.Inputs = new List<Inputs>();
+        //if (Random.value > PACKET_LOSS)
+        //{
+        //    inputCmd.DeliveryTime = Time.time + RTT;
+        //    inputCmd.LastAckedTick = ClientLastAckedTick;
+        //    inputCmd.Inputs = new List<Inputs>();
 
-            for (int tick = inputCmd.LastAckedTick; tick <= ClientTick; ++tick)
-                inputCmd.Inputs.Add(SimulationSteps[tick % BufferLength].Input);
+        //    for (int tick = inputCmd.LastAckedTick; tick <= ClientTick; ++tick)
+        //        inputCmd.Inputs.Add(SimulationSteps[tick % BufferLength].Input);
 
-            ReceivedServerInputs.Enqueue(inputCmd);
-        }
+        //    ReceivedServerInputs.Enqueue(inputCmd);
+        //}
 
         ++ClientTick;
 
@@ -284,5 +287,105 @@ public class SimpleDS : MonoBehaviour
         GUI.Box(new Rect(5f, 125f, 180f, 25f), $"PREDICTED TICK {ClientTick}");
         GUI.Box(new Rect(5f, 155f, 180f, 25f), $"SERVER TICK {ServerTick}");
         GUI.Box(new Rect(5f, 185f, 180f, 25f), $"FPS {fps}");
+    }
+
+    public void SendInputCommand()
+    {
+        Message message = Message.Create(MessageSendMode.unreliable, (ushort)ClientToServerId.inputCommand);
+
+        message.Add(ClientLastAckedTick);
+        inputCmd.Inputs = new List<Inputs>();
+
+        for (int tick = inputCmd.LastAckedTick; tick <= ClientTick; ++tick)
+            inputCmd.Inputs.Add(SimulationSteps[tick % BufferLength].Input);
+
+        ushort countOfCommands = (ushort)inputCmd.Inputs.Count;
+        message.Add(countOfCommands);
+
+        foreach (Inputs input in inputCmd.Inputs)
+        {
+            message.Add(input.buttons);
+        }
+
+        NetworkManager.Singleton.Client.Send(message);
+
+        DebugScreen.packetsUp++;
+        DebugScreen.bytesUp += message.WrittenLength;
+    }
+
+    [MessageHandler((ushort)ClientToServerId.inputCommand)]
+    public void ReceiveInputCommands(Message message)
+    {
+        DebugScreen.bytesDown += message.WrittenLength;
+        DebugScreen.packetsDown++;
+
+        inputCmd.DeliveryTime = Time.time;
+        inputCmd.LastAckedTick = message.GetInt();
+
+        ushort countOfCommands = message.GetUShort();
+        List<Inputs> list = new List<Inputs>();
+
+        for (ushort i = 0; i < countOfCommands; i++)
+        {
+            list.Add((Inputs)(message.GetUShort()));
+        }
+        inputCmd.Inputs = list;
+    }
+
+    public void EnqueOnServer()
+    {
+        inputCmd.DeliveryTime = Time.time + RTT;
+        inputCmd.LastAckedTick = ClientLastAckedTick;
+        inputCmd.Inputs = new List<Inputs>();
+
+        for (int tick = inputCmd.LastAckedTick; tick <= ClientTick; ++tick)
+            inputCmd.Inputs.Add(SimulationSteps[tick % BufferLength].Input);
+
+        ReceivedServerInputs.Enqueue(inputCmd);
+    }
+
+    public void SendClientSnapchot()
+    {
+        Message message = Message.Create(MessageSendMode.unreliable, (ushort)ServerToClientId.clientSnapshot);
+
+        message.Add(Time.time);
+        message.Add(ServerTick)
+
+        NetworkManager.Singleton.Client.Send(message);
+
+        DebugScreen.packetsUp++;
+        DebugScreen.bytesUp += message.WrittenLength;
+    }
+
+    [MessageHandler((ushort)ServerToClientId.clientSnapshot))]
+    public void ReceiveClientSnapchot(Message message)
+    {
+        DebugScreen.bytesDown += message.WrittenLength;
+        DebugScreen.packetsDown++;
+
+        inputCmd.DeliveryTime = Time.time;
+        inputCmd.LastAckedTick = message.GetInt();
+
+        ushort countOfCommands = message.GetUShort();
+        List<Inputs> list = new List<Inputs>();
+
+        for (ushort i = 0; i < countOfCommands; i++)
+        {
+            list.Add((Inputs)(message.GetUShort()));
+        }
+        inputCmd.Inputs = list;
+    }
+
+    public void EnqueOnClient()
+    {
+         Snapshot snapshot;
+         snapshot.DeliveryTime = Time.time;
+         snapshot.Tick = ServerTick;
+         snapshot.Position = ServerRb.position;
+         snapshot.Rotation = ServerRb.rotation;
+         snapshot.Velocity = ServerRb.velocity;
+         snapshot.AngularVelocity = ServerRb.angularVelocity;
+         
+         ReceivedClientSnapshots.Enqueue(snapshot);
     }
 }

@@ -1,5 +1,6 @@
 ﻿using RiptideNetworking;
 using UnityEngine;
+using System.Collections.Generic;
 
 public static class MessageExtensions
 {
@@ -47,6 +48,17 @@ public static class MessageExtensions
     public static Quaternion GetQuaternion(this Message message)
     {
         return new Quaternion(message.GetFloat(), message.GetFloat(), message.GetFloat(), message.GetFloat());
+    }
+
+    public static List<SimpleDS.Inputs> GetInputCommands(this Message message)
+    {
+        ushort countOfCommands = message.GetUShort();
+        List<SimpleDS.Inputs> list; 
+
+        for (ushort i = 0; i < countOfCommands; i++)
+        {
+            list.Add()
+        }
     }
     #endregion
 }

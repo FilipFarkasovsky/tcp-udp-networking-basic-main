@@ -13,12 +13,14 @@ public enum ServerToClientId : ushort
     serverSimulationState,
     serverConvar,
     serverTick,
+    clientSnapshot,
 }
 public enum ClientToServerId : ushort
 {
     playerName = 1,
     playerInput,
     playerConvar,
+    inputCommand,
 }
 
 
