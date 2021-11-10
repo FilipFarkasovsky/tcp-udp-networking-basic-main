@@ -72,7 +72,7 @@ MonoBehaviour:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 4372309730251437740}
-  m_Enabled: 0
+  m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 71a16c1e9321b024b891e91737914bce, type: 3}
   m_Name: 
@@ -86,6 +86,8 @@ MonoBehaviour:
     m_Bits: 64
   checkRadius: 0.485
   velocity: {x: 0, y: 0, z: 0}
+  ClientTick: 0
+  ClientLastAckedTick: 0
 --- !u!136 &3902867291292079139
 CapsuleCollider:
   m_ObjectHideFlags: 0
@@ -310,6 +312,7 @@ MonoBehaviour:
   playerManager: {fileID: -4224624851614131593}
   ClientRb: {fileID: 983334931536477041}
   RotationSpeed: 90
+  PreviousPosition: {x: 0, y: 0, z: 0}
 --- !u!1 &4634531960900213371
 GameObject:
   m_ObjectHideFlags: 0

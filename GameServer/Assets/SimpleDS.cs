@@ -64,43 +64,16 @@ public class SimpleDS : MonoBehaviour
 
     #endregion
 
-    const int BufferLength = 32;
-
-    [SerializeField, Range(0, 1)] float RTT;
-    [SerializeField, Range(0, 1)] float PACKET_LOSS;
-
-    [SerializeField] GameObject ClientSimObject;
     [SerializeField] GameObject ServerSimObject;
-    [SerializeField] GameObject SmoothObject;
-    [SerializeField] Transform CameraTransform;
 
-    //[SerializeField] int ClientTick;
-    [SerializeField] int ClientLastAckedTick;
     [SerializeField] int ServerTick;
 
-    Queue<Snapshot> ReceivedClientSnapshots;
-
     public Queue<InputCmd> ReceivedServerInputs;
-
-    SimulationStep[] SimulationSteps;
-
-    //LoadSceneParameters sceneParams = new LoadSceneParameters(LoadSceneMode.Additive, Local
-    //Mode.Physics3D);
-
-    //Scene ServerScene, ClientScene;
-    //PhysicsScene ServerPhysics, ClientPhysics;
 
     public InputCmd inputCmd;
 
     public Rigidbody ServerRb;
-    Rigidbody ClientRb;
-
-    [SerializeField] float RotationSpeed = 90;
-    float CamRotation;
-
     float FixedStepAccumulator;
-
-    Vector3 PreviousPosition;
 
     public ushort ID;
 
@@ -109,25 +82,8 @@ public class SimpleDS : MonoBehaviour
         Physics.autoSimulation = false;
 
         ReceivedServerInputs = new Queue<InputCmd>();
-        ReceivedClientSnapshots = new Queue<Snapshot>();
-
-        SimulationSteps = new SimulationStep[BufferLength];
 
         ServerRb.isKinematic = false;
-
-        //ServerScene = SceneManager.LoadScene("PhysicsInstance", sceneParams);
-        //ClientScene = SceneManager.LoadScene("PhysicsInstance", sceneParams);
-
-        //ServerPhysics = ServerScene.GetPhysicsScene();
-        //ClientPhysics = ClientScene.GetPhysicsScene();
-
-        //ServerSimObject.transform.SetParent(null);
-
-        //SceneManager.MoveGameObjectToScene(ServerSimObject, ServerScene);
-        //SceneManager.MoveGameObjectToScene(ClientSimObject, ClientScene);
-
-        //ServerRb = ServerSimObject.GetComponent<Rigidbody>();
-        //ClientRb = ClientSimObject.GetComponent<Rigidbody>();
 
         Cursor.lockState = CursorLockMode.Locked;
     }
@@ -141,36 +97,8 @@ public class SimpleDS : MonoBehaviour
             FixedStepAccumulator -= Time.fixedDeltaTime;
 
             ServerUpdate();
-            //ClientUpdate();
         }
-
-        //float _alpha = Mathf.Clamp01(FixedStepAccumulator / Time.fixedDeltaTime);
-
-        //SmoothObject.transform.position = Vector3.Lerp(PreviousPosition, ClientSimObject.transform.position, _alpha);
-
-        //CamRotation += Input.GetAxisRaw("Mouse X") * RotationSpeed;
-        //CameraTransform.position = SmoothObject.transform.position;
-        //CameraTransform.rotation = Quaternion.Euler(0, CamRotation, 0);
-
-
-        //if (Input.GetKeyDown(KeyCode.V))
-        //{
-        //    vsyncToggle = !vsyncToggle;
-        //    QualitySettings.vSyncCount = vsyncToggle ? 1 : 0;
-        //}
-
-        //if (Time.unscaledTime > _timer)
-        //{
-        //    fps = (int)(1f / Time.deltaTime);
-        //    _timer = Time.unscaledTime + 1;
-        //}
     }
-
-    //int fps;
-
-    //float _timer;
-
-    //bool vsyncToggle = false;
 
     public void ServerUpdate()
     {
@@ -183,88 +111,15 @@ public class SimpleDS : MonoBehaviour
                 for (int i = (ServerTick > inputCmd.LastAckedTick ? (ServerTick - inputCmd.LastAckedTick) : 0); i < inputCmd.Inputs.Count; ++i)
                 {
                     MoveLocalEntity(ServerRb, inputCmd.Inputs[i]);
-                    //ServerPhysics.Simulate(Time.fixedDeltaTime);
                     Physics.Simulate(Time.fixedDeltaTime);
 
                     ++ServerTick;
 
                     SendClientSnapchot();
-                    //if (Random.value > PACKET_LOSS)
-                    //{
-                    //    Snapshot snapshot;
-                    //    snapshot.DeliveryTime = Time.time + RTT;
-                    //    snapshot.Tick = ServerTick;
-                    //    snapshot.Position = ServerRb.position;
-                    //    snapshot.Rotation = ServerRb.rotation;
-                    //    snapshot.Velocity = ServerRb.velocity;
-                    //    snapshot.AngularVelocity = ServerRb.angularVelocity;
-
-                    //    ReceivedClientSnapshots.Enqueue(snapshot);
-                    //}
                 }
             }
         }
     }
-
-
-
-    //void ClientUpdate()
-    //{
-    //    int stateSlot = ClientTick % BufferLength;
-
-    //    ushort Buttons = 0;
-
-    //    if (Input.GetKey(KeyCode.W)) Buttons |= BTN_FORWARD;
-    //    if (Input.GetKey(KeyCode.S)) Buttons |= BTN_BACKWARD;
-    //    if (Input.GetKey(KeyCode.A)) Buttons |= BTN_LEFTWARD;
-    //    if (Input.GetKey(KeyCode.D)) Buttons |= BTN_RIGHTWARD;
-
-    //    SimulationSteps[stateSlot].Input = Buttons;
-
-    //    SetStateAndRollback(ref SimulationSteps[stateSlot], ClientRb);
-
-    //    PreviousPosition = SimulationSteps[stateSlot].Position;
-
-    //    if (Random.value > PACKET_LOSS)
-    //    {
-    //        inputCmd.DeliveryTime = Time.time + RTT;
-    //        inputCmd.LastAckedTick = ClientLastAckedTick;
-    //        inputCmd.Inputs = new List<Inputs>();
-
-    //        for (int tick = inputCmd.LastAckedTick; tick <= ClientTick; ++tick)
-    //            inputCmd.Inputs.Add(SimulationSteps[tick % BufferLength].Input);
-
-    //        ReceivedServerInputs.Enqueue(inputCmd);
-    //    }
-
-    //    ++ClientTick;
-
-    //    if (ReceivedClientSnapshots.Count > 0 && Time.time >= ReceivedClientSnapshots.Peek().DeliveryTime)
-    //    {
-    //        Snapshot snapshot = ReceivedClientSnapshots.Dequeue();
-
-    //        while (ReceivedClientSnapshots.Count > 0 && Time.time >= ReceivedClientSnapshots.Peek().DeliveryTime)
-    //            snapshot = ReceivedClientSnapshots.Dequeue();
-
-    //        ClientLastAckedTick = snapshot.Tick;
-
-    //        ClientRb.position = snapshot.Position;
-    //        ClientRb.rotation = snapshot.Rotation;
-    //        ClientRb.velocity = snapshot.Velocity;
-    //        ClientRb.angularVelocity = snapshot.AngularVelocity;
-
-    //        Debug.Log("REWIND " + snapshot.Tick + " (rewinding " + (ClientTick - snapshot.Tick) + " ticks)");
-
-    //        int TicksToRewind = snapshot.Tick;
-
-    //        while (TicksToRewind < ClientTick)
-    //        {
-    //            int rewindTick = TicksToRewind % BufferLength;
-    //            SetStateAndRollback(ref SimulationSteps[rewindTick], ClientRb);
-    //            ++TicksToRewind;
-    //        }
-    //    }
-    //}
 
     void MoveLocalEntity(Rigidbody rb, Inputs input)
     {
@@ -277,27 +132,6 @@ public class SimpleDS : MonoBehaviour
 
         rb.velocity = direction.normalized * 3f;
     }
-
-    //void SetStateAndRollback(ref SimulationStep state, Rigidbody _rb)
-    //{
-    //    state.Position = _rb.position;
-    //    state.Rotation = _rb.rotation;
-
-    //    MoveLocalEntity(_rb, state.Input);
-    //    ClientPhysics.Simulate(Time.fixedDeltaTime);
-    //}
-
-    //public void EnqueOnServer()
-    //{
-    //    inputCmd.DeliveryTime = Time.time + RTT;
-    //    inputCmd.LastAckedTick = ClientLastAckedTick;
-    //    inputCmd.Inputs = new List<Inputs>();
-
-    //    for (int tick = inputCmd.LastAckedTick; tick <= ClientTick; ++tick)
-    //        inputCmd.Inputs.Add(SimulationSteps[tick % BufferLength].Input);
-
-    //    ReceivedServerInputs.Enqueue(inputCmd);
-    //}
 
     public void SendClientSnapchot()
     {
@@ -312,19 +146,5 @@ public class SimpleDS : MonoBehaviour
 
         NetworkManager.Singleton.Server.Send(message, ID);
 
-    }
-
-
-    public void EnqueOnClient()
-    {
-         Snapshot snapshot;
-         snapshot.DeliveryTime = Time.time + RTT;
-         snapshot.Tick = ServerTick;
-         snapshot.Position = ServerRb.position;
-         snapshot.Rotation = ServerRb.rotation;
-         snapshot.Velocity = ServerRb.velocity;
-         snapshot.AngularVelocity = ServerRb.angularVelocity;
-         
-         ReceivedClientSnapshots.Enqueue(snapshot);
     }
 }

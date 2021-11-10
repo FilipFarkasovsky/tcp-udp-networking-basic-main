@@ -104,21 +104,14 @@ MonoBehaviour:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 4573160584066692170}
-  m_Enabled: 1
+  m_Enabled: 0
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: dec4374f8920db045a73044580326f5d, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  RTT: 0
-  PACKET_LOSS: 0
-  ClientSimObject: {fileID: 4573160584066692170}
   ServerSimObject: {fileID: 4573160584066692170}
-  SmoothObject: {fileID: 4573160584066692170}
-  CameraTransform: {fileID: 4430480632124645266}
-  ClientLastAckedTick: 0
   ServerTick: 0
   ServerRb: {fileID: 8521745754849283522}
-  RotationSpeed: 90
   ID: 0
 --- !u!136 &1610270297662328494
 CapsuleCollider:
@@ -127,7 +120,7 @@ CapsuleCollider:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 4573160584066692170}
-  m_Material: {fileID: 0}
+  m_Material: {fileID: 13400000, guid: ca62a9ccb90ab2845ae28851ced8f178, type: 2}
   m_IsTrigger: 0
   m_Enabled: 1
   m_Radius: 0.5

@@ -39,6 +39,57 @@ public class Player : MonoBehaviour
     public float forwardSpeed;
     public bool jumping;
 
+    // ---------------------- NEW SYSTEM ------------------------
+    #region Structs
+
+    #region INPUT SCHEMA
+
+    public const byte BTN_FORWARD = 1 << 1;
+    public const byte BTN_BACKWARD = 1 << 2;
+    public const byte BTN_LEFTWARD = 1 << 3;
+    public const byte BTN_RIGHTWARD = 1 << 4;
+
+    #endregion
+
+    public struct Inputs
+    {
+        public readonly ushort buttons;
+
+        public Inputs(ushort value) : this() => buttons = value;
+
+        public bool IsUp(ushort button) => IsDown(button) == false;
+
+        public bool IsDown(ushort button) => (buttons & button) == button;
+
+        public static implicit operator Inputs(ushort value) => new Inputs(value);
+    }
+
+    public struct InputCmd
+    {
+        public float DeliveryTime;
+        public int LastAckedTick;
+        public List<Inputs> Inputs;
+    }
+
+    struct SimulationStep
+    {
+        public Vector3 Position;
+        public Quaternion Rotation;
+        public Inputs Input;
+    }
+
+    struct Snapshot
+    {
+        public float DeliveryTime;
+        public int Tick;
+        public Vector3 Position;
+        public Quaternion Rotation;
+        public Vector3 Velocity;
+        public Vector3 AngularVelocity;
+    }
+
+    #endregion
+
     //-----------
     /// <summary>Sends a player's info to the given client.</summary>
     /// <param name="toClient">The client to send the message to.</param>
@@ -69,12 +120,10 @@ public class Player : MonoBehaviour
         lastFrame = 0;
         //logicTimer = new LogicTimer(() => FixedTime());
     }
-
-   private void OnDestroy()
+    private void OnDestroy()
     {
         List.Remove(id);
     }
-
     public static void Spawn(ushort id, string username)
     {
         Player player = Instantiate(NetworkManager.Singleton.PlayerPrefab, new Vector3(0f, 1f, 0f), Quaternion.identity).GetComponent<Player>();
@@ -94,7 +143,6 @@ public class Player : MonoBehaviour
     {
         //logicTimer.Update();
     }
-
     public void Destroy()
     {
         //logicTimer.Stop();
@@ -104,11 +152,41 @@ public class Player : MonoBehaviour
     
     void FixedUpdate()
     {
-        //ProcessInputs();
+        ProcessInputs();
         SendMessages.PlayerTransform(this);
         SendMessages.PlayerAnimation(this);
     }
 
+    #region New System
+    private void SecondProcessInput(ClientInputState inputs)
+    {
+        rb.isKinematic = false;
+
+        Vector3 direction = default;
+
+        if (inputs.VerticalAxis == 1) { direction += transform.forward; }
+        else if (inputs.VerticalAxis == -1) { direction -= transform.forward; }
+        if (inputs.HorizontalAxis == 1) { direction += transform.right; }
+        else if (inputs.HorizontalAxis == -1) { direction -= transform.right; }
+
+        rb.velocity = direction.normalized * 3f;
+        Physics.Simulate(Time.fixedDeltaTime);
+    }
+
+    void MoveLocalEntity(Rigidbody rb, Inputs input)
+    {
+        Vector3 direction = default;
+
+        if (input.IsDown(BTN_FORWARD)) direction += transform.forward;
+        if (input.IsDown(BTN_BACKWARD)) direction -= transform.forward;
+        if (input.IsDown(BTN_LEFTWARD)) direction -= transform.right;
+        if (input.IsDown(BTN_RIGHTWARD)) direction += transform.right;
+
+        rb.velocity = direction.normalized * 3f;
+    }
+    #endregion
+
+    #region Old System
     public void ProcessInputs()
     {
         // Declare the ClientInputState that we're going to be using.
@@ -125,6 +203,7 @@ public class Player : MonoBehaviour
 
             // Process the input.
             ProcessInput(inputState);
+            //SecondProcessInput(inputState);
 
             // Obtain the current SimulationState.
             SimulationState state = SimulationState.CurrentSimulationState(inputState, this);
@@ -190,7 +269,8 @@ public class Player : MonoBehaviour
         else
             AirMove(inputs);
     }
-    
+    #endregion
+
     #region Movement
     void GroundCheck()
     {

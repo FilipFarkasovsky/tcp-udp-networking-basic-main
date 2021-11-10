@@ -88,7 +88,7 @@ public class SimpleDS : MonoBehaviour
 
     float FixedStepAccumulator;
 
-    Vector3 PreviousPosition;
+    public Vector3 PreviousPosition;
 
     void Start()
     {
@@ -113,7 +113,7 @@ public class SimpleDS : MonoBehaviour
         {
             FixedStepAccumulator -= Time.fixedDeltaTime;
 
-            ClientUpdate();
+            //ClientUpdate();
         }
 
         float _alpha = Mathf.Clamp01(FixedStepAccumulator / Time.fixedDeltaTime);

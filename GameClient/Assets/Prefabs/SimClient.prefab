@@ -42,7 +42,7 @@ CapsuleCollider:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 5358212050909483801}
-  m_Material: {fileID: 0}
+  m_Material: {fileID: 13400000, guid: 403eaf048cbec0f4eb26b136ab8762e0, type: 2}
   m_IsTrigger: 0
   m_Enabled: 1
   m_Radius: 0.5

@@ -1,7 +1,59 @@
 using UnityEngine;
+using System.Collections.Generic;
+using RiptideNetworking;
 
 public class PlayerInput : MonoBehaviour
 {
+    #region Structs
+
+    #region INPUT SCHEMA
+
+    public const byte BTN_FORWARD = 1 << 1;
+    public const byte BTN_BACKWARD = 1 << 2;
+    public const byte BTN_LEFTWARD = 1 << 3;
+    public const byte BTN_RIGHTWARD = 1 << 4;
+
+    #endregion
+
+    public struct Inputs
+    {
+        public readonly ushort buttons;
+
+        public Inputs(ushort value) : this() => buttons = value;
+
+        public bool IsUp(ushort button) => IsDown(button) == false;
+
+        public bool IsDown(ushort button) => (buttons & button) == button;
+
+        public static implicit operator Inputs(ushort value) => new Inputs(value);
+    }
+
+    struct InputCmd
+    {
+        public float DeliveryTime;
+        public int LastAckedTick;
+        public List<Inputs> Inputs;
+    }
+
+    struct SimulationStep
+    {
+        public Vector3 Position;
+        public Quaternion Rotation;
+        public Inputs Input;
+    }
+
+    struct Snapshot
+    {
+        public float DeliveryTime;
+        public int Tick;
+        public Vector3 Position;
+        public Quaternion Rotation;
+        public Vector3 Velocity;
+        public Vector3 AngularVelocity;
+    }
+
+    #endregion
+
     static Convar moveSpeed = new Convar("sv_movespeed", 6.35f, "Movement speed for the player", Flags.NETWORK);
     static Convar runAcceleration = new Convar("sv_accelerate", 14f, "Acceleration for the player when moving", Flags.NETWORK);
     static Convar airAcceleration = new Convar("sv_airaccelerate", 12f, "Air acceleration for the player", Flags.NETWORK);
@@ -22,19 +74,37 @@ public class PlayerInput : MonoBehaviour
     public Vector3 velocity = Vector3.zero;
     private bool isGrounded;
 
+    // The maximum cache size for both the ClientInputState and SimulationState caches.
     private const int STATE_CACHE_SIZE = 1024;
 
+    // The client's current simulation frame. 
     private int simulationFrame;
+    // The last simulationFrame that we Reconciled from the server.
     private int lastCorrectedFrame;
 
-    private SimulationState serverSimulationState;
+    // The cache that stores all of the client's predicted movement reuslts. 
     private SimulationState[] simulationStateCache;
+    // The cache that stores all of the client's inputs. 
     private ClientInputState[] inputStateCache;
+    // The last known SimulationState provided by the server.
+    private SimulationState serverSimulationState;
+    // The client's current ClientInputState.
     private ClientInputState inputState;
 
     private ConsoleUI consoleUI;
-
     static LogicTimer logicTimer;
+
+
+    //          *******       NEW SYSTEM                                  ************
+    // The maximum cache size for SimulationStep caches 
+    // also it is count of the redundant inputs sent to server
+    private const int INPUT_CACHE_SIZE = 32;
+    [SerializeField] int ClientTick;
+    [SerializeField] int ClientLastAckedTick;
+    Queue<Snapshot> ReceivedClientSnapshots;
+    SimulationStep[] SimulationSteps;
+    InputCmd inputCmd;
+
 
     private void Awake()
     {
@@ -52,6 +122,7 @@ public class PlayerInput : MonoBehaviour
     void Start()
     {
         consoleUI = FindObjectOfType<ConsoleUI>();
+        SimulationSteps = new SimulationStep[INPUT_CACHE_SIZE];
 
         //logicTimer = new LogicTimer(() => FixedTime());
         //logicTimer.Start();
@@ -64,11 +135,12 @@ public class PlayerInput : MonoBehaviour
     {
         // Process inputs
         ProcessInput(inputState);
+        //SecondProcessInput(inputState);
 
         // Send inputs so the server can process them
         SendInputToServer();
 
-        // Reconciliate
+        // Reconciliate if there's a message from the server
         if (serverSimulationState != null) Reconciliate();
 
         // Get current simulationState
@@ -88,7 +160,7 @@ public class PlayerInput : MonoBehaviour
         ++simulationFrame;
 
         // Add position to interpolate
-        playerManager.interpolation.PlayerUpdate(simulationFrame, transform.position);
+        //playerManager.interpolation.PlayerUpdate(simulationFrame, transform.position);
     }
 
     private void Update()
@@ -130,11 +202,89 @@ public class PlayerInput : MonoBehaviour
         };
 
         Vector3 localVelocity = Quaternion.Euler(0 ,transform.rotation.eulerAngles.y - playerCamera.transform.rotation.eulerAngles.y ,0) * new Vector3 (velocity.x, 0, velocity.z);
-        playerManager.playerAnimation.IsFiring(Input.GetButton("Fire1"));
-        playerManager.playerAnimation.UpdateAnimatorProperties(localVelocity.x/moveSpeed.GetValue(), localVelocity.z/moveSpeed.GetValue(), isGrounded, Input.GetButton("Jump"));
+        //playerManager.playerAnimation.IsFiring(Input.GetButton("Fire1"));
+        //playerManager.playerAnimation.UpdateAnimatorProperties(localVelocity.x/moveSpeed.GetValue(), localVelocity.z/moveSpeed.GetValue(), isGrounded, Input.GetButton("Jump"));
         //logicTimer.Update();
     }
-    
+
+    //    **************   NEW SYSTEM **************
+    #region New System
+    private void SecondProcessInput(ClientInputState inputs)
+    {
+        RotationCheck(inputs);
+
+        rb.isKinematic = false;
+
+        //CalculateVelocity(inputs);
+        //Physics.Simulate(LogicTimer.FixedDelta);
+
+        int stateSlot = simulationFrame % INPUT_CACHE_SIZE;
+
+        ushort Buttons = 0;
+
+        if (Input.GetKey(KeyCode.W)) Buttons |= BTN_FORWARD;
+        if (Input.GetKey(KeyCode.S)) Buttons |= BTN_BACKWARD;
+        if (Input.GetKey(KeyCode.A)) Buttons |= BTN_LEFTWARD;
+        if (Input.GetKey(KeyCode.D)) Buttons |= BTN_RIGHTWARD;
+
+        SimulationSteps[stateSlot].Input = Buttons;
+
+        SetStateAndRollback(ref SimulationSteps[stateSlot], rb);
+
+        playerManager.simpleDS.PreviousPosition = SimulationSteps[stateSlot].Position;
+
+        //SendInputCommand();
+
+        //++ClientTick;
+    }
+
+    public void SendInputCommand()
+    {
+        Message message = Message.Create(MessageSendMode.unreliable, (ushort)ClientToServerId.inputCommand);
+
+        message.Add(ClientLastAckedTick);
+        inputCmd.Inputs = new List<Inputs>();
+
+        for (int tick = ClientLastAckedTick; tick <= ClientTick; ++tick)
+            inputCmd.Inputs.Add(SimulationSteps[tick % INPUT_CACHE_SIZE].Input);
+
+        ushort countOfCommands = (ushort)inputCmd.Inputs.Count;
+        message.Add(countOfCommands);
+
+        foreach (Inputs input in inputCmd.Inputs)
+        {
+            message.Add(input.buttons);
+        }
+
+        NetworkManager.Singleton.Client.Send(message);
+
+        DebugScreen.packetsUp++;
+        DebugScreen.bytesUp += message.WrittenLength;
+    }
+
+    void MoveLocalEntity(Rigidbody rb, Inputs input)
+    {
+        Vector3 direction = default;
+
+        if (input.IsDown(BTN_FORWARD)) direction += transform.forward;
+        if (input.IsDown(BTN_BACKWARD)) direction -= transform.forward;
+        if (input.IsDown(BTN_LEFTWARD)) direction -= transform.right;
+        if (input.IsDown(BTN_RIGHTWARD)) direction += transform.right;
+
+        rb.velocity = direction.normalized * 3f;
+    }
+
+    void SetStateAndRollback(ref SimulationStep state, Rigidbody _rb)
+    {
+        state.Position = _rb.position;
+        state.Rotation = _rb.rotation;
+
+        MoveLocalEntity(_rb, state.Input);
+        Physics.Simulate(Time.fixedDeltaTime);
+    }
+    #endregion
+
+    #region Old System
     private void ProcessInput(ClientInputState inputs)
     {
 
@@ -146,6 +296,7 @@ public class PlayerInput : MonoBehaviour
 
         CalculateVelocity(inputs);
         Physics.Simulate(LogicTimer.FixedDelta);
+        playerManager.simpleDS.PreviousPosition = rb.position;
 
         velocity = rb.velocity;
         rb.isKinematic = true;
@@ -167,6 +318,7 @@ public class PlayerInput : MonoBehaviour
         else
             AirMove(inputs);
     }
+    #endregion
 
     #region Movement
     void GroundCheck()
@@ -315,6 +467,37 @@ public class PlayerInput : MonoBehaviour
 
     public void Reconciliate()
     {
+        // -----------------------------------------------------------//
+        //          DELETE THIS         OR      COMMENT            //
+        /*
+        if (ReceivedClientSnapshots.Count > 0 && Time.time >= ReceivedClientSnapshots.Peek().DeliveryTime)
+        {
+            Snapshot snapshot = ReceivedClientSnapshots.Dequeue();
+
+            while (ReceivedClientSnapshots.Count > 0 && Time.time >= ReceivedClientSnapshots.Peek().DeliveryTime)
+                snapshot = ReceivedClientSnapshots.Dequeue();
+
+            ClientLastAckedTick = snapshot.Tick;
+            rb.position = snapshot.Position;
+            rb.rotation = snapshot.Rotation;
+            rb.velocity = snapshot.Velocity;
+            rb.angularVelocity = snapshot.AngularVelocity;
+
+            Debug.Log("REWIND " + snapshot.Tick + " (rewinding " + (ClientTick - snapshot.Tick) + " ticks)");
+
+            int TicksToRewind = snapshot.Tick;
+
+            while (TicksToRewind < ClientTick)
+            {
+                int rewindTick = TicksToRewind % INPUT_CACHE_SIZE;
+                SetStateAndRollback(ref SimulationSteps[rewindTick], rb);
+                ++TicksToRewind;
+            }
+        }
+        */
+        // ------------------------------------------------------------   //
+
+
         // Sanity check, don't reconciliate for old states.
         if (serverSimulationState.simulationFrame <= lastCorrectedFrame) return;
 
@@ -347,7 +530,7 @@ public class PlayerInput : MonoBehaviour
         //  The amount of distance in units that we will allow the client's
         //  prediction to drift from it's position on the server, before a
         //  correction is necessary. 
-        float tolerance = 0.0000001f;
+        float tolerance = 0.1f;
 
         // A correction is necessary.
         if (difference.sqrMagnitude > tolerance)
@@ -383,6 +566,7 @@ public class PlayerInput : MonoBehaviour
 
                 // Process the cached inputs. 
                 ProcessInput(rewindCachedInputState);
+                //SecondProcessInput(rewindCachedInputState);
 
                 // Replace the simulationStateCache index with the new value.
                 SimulationState rewoundSimulationState = SimulationState.CurrentSimulationState(rewindCachedInputState, this);
