@@ -72,7 +72,7 @@ MonoBehaviour:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 4372309730251437740}
-  m_Enabled: 1
+  m_Enabled: 0
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 71a16c1e9321b024b891e91737914bce, type: 3}
   m_Name: 
@@ -234,6 +234,7 @@ GameObject:
   - component: {fileID: 4634531960378573318}
   - component: {fileID: -4224624851614131593}
   - component: {fileID: 779258126352695416}
+  - component: {fileID: 8991921563913084643}
   m_Layer: 3
   m_Name: Prot_LocalPlayer
   m_TagString: Player
@@ -266,12 +267,16 @@ MonoBehaviour:
   m_GameObject: {fileID: 4634531960378573312}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 6a4595639c5162843a2156e4466b0f2f, type: 3}
+  m_Script: {fileID: 11500000, guid: c8a3d335e95e83044b9253b712d4a153, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  simpleDS: {fileID: 8991921563913084643}
   id: 0
   username: 
-  interpolation: {fileID: 8665110661722755103}
+  snapshotStDev: {fileID: 0}
+  interpolation: {fileID: 0}
+  simpleInterpolation: {fileID: 0}
+  cameraInterpolation: {fileID: 0}
   playerAnimation: {fileID: 0}
 --- !u!114 &779258126352695416
 MonoBehaviour:
@@ -285,6 +290,26 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 007c0fd8c48a83c4295ded967aafe940, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+--- !u!114 &8991921563913084643
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4634531960378573312}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: daa411bddda2012458e71003393b907c, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  ClientSimObject: {fileID: 4372309730251437740}
+  SmoothObject: {fileID: 4867705065824037724}
+  CameraTransform: {fileID: 4634531960900213370}
+  ClientTick: 0
+  ClientLastAckedTick: 0
+  playerManager: {fileID: -4224624851614131593}
+  ClientRb: {fileID: 983334931536477041}
+  RotationSpeed: 90
 --- !u!1 &4634531960900213371
 GameObject:
   m_ObjectHideFlags: 0
@@ -408,7 +433,7 @@ MonoBehaviour:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 4867705065824037724}
-  m_Enabled: 1
+  m_Enabled: 0
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 550459fd92ac5814e9d5086ebf9874f1, type: 3}
   m_Name: 

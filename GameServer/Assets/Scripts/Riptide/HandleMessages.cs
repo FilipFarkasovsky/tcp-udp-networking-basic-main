@@ -1,12 +1,12 @@
 ﻿using UnityEngine;
 using RiptideNetworking;
+using System.Collections.Generic;
 
 public class HandleMessages
 {
     [MessageHandler((ushort)ClientToServerId.playerName)]
     public static void PlayerName(ushort fromClientId, Message message)
     {
-        Debug.LogWarning("PES");
         Player.Spawn(fromClientId, message.GetString());
     }
 
@@ -50,5 +50,25 @@ public class HandleMessages
                 return;
             }
         }
+    }
+
+    [MessageHandler((ushort)ClientToServerId.inputCommand)]
+    public static void ReceiveInputCommands(ushort _fromClient, Message message)
+    {
+        if (!Player.List.TryGetValue(_fromClient, out Player player))
+            return;
+
+        player.simpleDS.inputCmd.DeliveryTime = Time.time;
+        player.simpleDS.inputCmd.LastAckedTick = message.GetInt();
+
+        ushort countOfCommands = message.GetUShort();
+        List<SimpleDS.Inputs> list = new List<SimpleDS.Inputs>();
+
+        for (ushort i = 0; i < countOfCommands; i++)
+        {
+            list.Add((SimpleDS.Inputs)(message.GetUShort()));
+        }
+        player.simpleDS.inputCmd.Inputs = list;
+        player.simpleDS.ReceivedServerInputs.Enqueue(player.simpleDS.inputCmd);
     }
 }

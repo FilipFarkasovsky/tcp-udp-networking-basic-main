@@ -6,6 +6,7 @@ public class Player : MonoBehaviour
 {
     public static ushort myId = 0;
     public static Dictionary<ushort, Player> list = new Dictionary<ushort, Player>();
+    public SimpleDS simpleDS;
 
     public ushort id;
     public string username;

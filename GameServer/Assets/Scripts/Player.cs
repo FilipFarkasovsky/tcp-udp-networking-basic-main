@@ -5,6 +5,7 @@ using RiptideNetworking;
 public class Player : MonoBehaviour
 {
     public static Dictionary<ushort, Player> List { get; private set; } = new Dictionary<ushort, Player>();
+    public SimpleDS simpleDS;
 
     static Convar moveSpeed = new Convar("sv_movespeed", 6.35f, "Movement speed for the player", Flags.NETWORK);
     static Convar runAcceleration = new Convar("sv_accelerate", 14f, "Acceleration for the player when moving", Flags.NETWORK);
@@ -80,6 +81,7 @@ public class Player : MonoBehaviour
         player.name = $"Player {id} ({(username == "" ? "Guest" : username)})";
         player.id = id;
         player.username = username;
+        player.simpleDS.ID = id;
 
         player.SendSpawn();
         List.Add(player.id, player);
@@ -102,7 +104,7 @@ public class Player : MonoBehaviour
     
     void FixedUpdate()
     {
-        ProcessInputs();
+        //ProcessInputs();
         SendMessages.PlayerTransform(this);
         SendMessages.PlayerAnimation(this);
     }

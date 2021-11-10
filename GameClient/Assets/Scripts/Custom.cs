@@ -1,9 +1,8 @@
 using UnityEngine;
 using System.Collections.Generic;
 using UnityEngine.SceneManagement;
-using RiptideNetworking;
 
-public class SimpleDS : MonoBehaviour
+public class Custom : MonoBehaviour
 {
 
     #region TODO
@@ -25,9 +24,9 @@ public class SimpleDS : MonoBehaviour
 
     #endregion
 
-    public struct Inputs
+    struct Inputs
     {
-        public readonly ushort buttons;
+        readonly ushort buttons;
 
         public Inputs(ushort value) : this() => buttons = value;
 
@@ -66,22 +65,33 @@ public class SimpleDS : MonoBehaviour
 
     const int BufferLength = 32;
 
+    [SerializeField, Range(0, 1)] float RTT;
+    [SerializeField, Range(0, 1)] float PACKET_LOSS;
+
     [SerializeField] GameObject ClientSimObject;
+    [SerializeField] GameObject ServerSimObject;
     [SerializeField] GameObject SmoothObject;
     [SerializeField] Transform CameraTransform;
 
     [SerializeField] int ClientTick;
     [SerializeField] int ClientLastAckedTick;
-
-    public Player playerManager;
+    [SerializeField] int ServerTick;
 
     Queue<Snapshot> ReceivedClientSnapshots;
 
+    Queue<InputCmd> ReceivedServerInputs;
+
     SimulationStep[] SimulationSteps;
+
+    LoadSceneParameters sceneParams = new LoadSceneParameters(LoadSceneMode.Additive, LocalPhysicsMode.Physics3D);
+
+    Scene ServerScene, ClientScene;
+    PhysicsScene ServerPhysics, ClientPhysics;
 
     InputCmd inputCmd;
 
-    public Rigidbody ClientRb;
+    Rigidbody ServerRb;
+    Rigidbody ClientRb;
 
     [SerializeField] float RotationSpeed = 90;
     float CamRotation;
@@ -92,15 +102,24 @@ public class SimpleDS : MonoBehaviour
 
     void Start()
     {
-        Player.myId = playerManager.id;
-
-        ClientRb.isKinematic = false;
-
         Physics.autoSimulation = false;
 
+        ReceivedServerInputs = new Queue<InputCmd>();
         ReceivedClientSnapshots = new Queue<Snapshot>();
 
         SimulationSteps = new SimulationStep[BufferLength];
+
+        ServerScene = SceneManager.LoadScene("PhysicsInstance", sceneParams);
+        ClientScene = SceneManager.LoadScene("PhysicsInstance", sceneParams);
+
+        ServerPhysics = ServerScene.GetPhysicsScene();
+        ClientPhysics = ClientScene.GetPhysicsScene();
+
+        SceneManager.MoveGameObjectToScene(ServerSimObject, ServerScene);
+        SceneManager.MoveGameObjectToScene(ClientSimObject, ClientScene);
+
+        ServerRb = ServerSimObject.GetComponent<Rigidbody>();
+        ClientRb = ClientSimObject.GetComponent<Rigidbody>();
 
         Cursor.lockState = CursorLockMode.Locked;
     }
@@ -113,6 +132,7 @@ public class SimpleDS : MonoBehaviour
         {
             FixedStepAccumulator -= Time.fixedDeltaTime;
 
+            ServerUpdate();
             ClientUpdate();
         }
 
@@ -144,6 +164,38 @@ public class SimpleDS : MonoBehaviour
 
     bool vsyncToggle = false;
 
+    void ServerUpdate()
+    {
+        while (ReceivedServerInputs.Count > 0 && Time.time >= ReceivedServerInputs.Peek().DeliveryTime)
+        {
+            InputCmd inputCmd = ReceivedServerInputs.Dequeue();
+
+            if ((inputCmd.LastAckedTick + inputCmd.Inputs.Count - 1) >= ServerTick)
+            {
+                for (int i = (ServerTick > inputCmd.LastAckedTick ? (ServerTick - inputCmd.LastAckedTick) : 0); i < inputCmd.Inputs.Count; ++i)
+                {
+                    MoveLocalEntity(ServerRb, inputCmd.Inputs[i]);
+                    ServerPhysics.Simulate(Time.fixedDeltaTime);
+
+                    ++ServerTick;
+
+                    if (Random.value > PACKET_LOSS)
+                    {
+                        Snapshot snapshot;
+                        snapshot.DeliveryTime = Time.time + RTT;
+                        snapshot.Tick = ServerTick;
+                        snapshot.Position = ServerRb.position;
+                        snapshot.Rotation = ServerRb.rotation;
+                        snapshot.Velocity = ServerRb.velocity;
+                        snapshot.AngularVelocity = ServerRb.angularVelocity;
+
+                        ReceivedClientSnapshots.Enqueue(snapshot);
+                    }
+                }
+            }
+        }
+    }
+
     void ClientUpdate()
     {
         int stateSlot = ClientTick % BufferLength;
@@ -161,7 +213,17 @@ public class SimpleDS : MonoBehaviour
 
         PreviousPosition = SimulationSteps[stateSlot].Position;
 
-        SendInputCommand();
+        if (Random.value > PACKET_LOSS)
+        {
+            inputCmd.DeliveryTime = Time.time + RTT;
+            inputCmd.LastAckedTick = ClientLastAckedTick;
+            inputCmd.Inputs = new List<Inputs>();
+
+            for (int tick = inputCmd.LastAckedTick; tick <= ClientTick; ++tick)
+                inputCmd.Inputs.Add(SimulationSteps[tick % BufferLength].Input);
+
+            ReceivedServerInputs.Enqueue(inputCmd);
+        }
 
         ++ClientTick;
 
@@ -173,6 +235,7 @@ public class SimpleDS : MonoBehaviour
                 snapshot = ReceivedClientSnapshots.Dequeue();
 
             ClientLastAckedTick = snapshot.Tick;
+
             ClientRb.position = snapshot.Position;
             ClientRb.rotation = snapshot.Rotation;
             ClientRb.velocity = snapshot.Velocity;
@@ -200,7 +263,7 @@ public class SimpleDS : MonoBehaviour
         if (input.IsDown(BTN_LEFTWARD)) direction -= transform.right;
         if (input.IsDown(BTN_RIGHTWARD)) direction += transform.right;
 
-        rb.velocity = direction.normalized * 3f;
+        rb.velocity += direction.normalized * 3f;
     }
 
     void SetStateAndRollback(ref SimulationStep state, Rigidbody _rb)
@@ -209,64 +272,17 @@ public class SimpleDS : MonoBehaviour
         state.Rotation = _rb.rotation;
 
         MoveLocalEntity(_rb, state.Input);
-        Physics.Simulate(Time.fixedDeltaTime);
+        ClientPhysics.Simulate(Time.fixedDeltaTime);
     }
 
     private void OnGUI()
     {
-        GUI.Box(new Rect(5f, 5f, 180f, 25f), $"STORED COMMANDS {inputCmd.Inputs?.Count}");
-        GUI.Box(new Rect(5f, 35f, 180f, 25f), $"LAST TICK {ClientLastAckedTick}");
-        GUI.Box(new Rect(5f, 65f, 180f, 25f), $"PREDICTED TICK {ClientTick}");
-        GUI.Box(new Rect(5f, 95f, 180f, 25f), $"FPS {fps}");
-    }
-
-    public void SendInputCommand()
-    {
-        Message message = Message.Create(MessageSendMode.unreliable, (ushort)ClientToServerId.inputCommand);
-
-        message.Add(ClientLastAckedTick);
-        inputCmd.Inputs = new List<Inputs>();
-
-        for (int tick = ClientLastAckedTick; tick <= ClientTick; ++tick)
-            inputCmd.Inputs.Add(SimulationSteps[tick % BufferLength].Input);
-
-        ushort countOfCommands = (ushort)inputCmd.Inputs.Count;
-        message.Add(countOfCommands);
-
-        //Debug.Log(countOfCommands);
-        //Debug.Log(ClientLastAckedTick);
-        //Debug.Log(ClientTick);
-
-        foreach (Inputs input in inputCmd.Inputs)
-        {
-            message.Add(input.buttons);
-        }
-
-        NetworkManager.Singleton.Client.Send(message);
-
-        DebugScreen.packetsUp++;
-        DebugScreen.bytesUp += message.WrittenLength;
-    }
-
-    [MessageHandler((ushort)ServerToClientId.clientSnapshot)]
-    public static void ReceiveClientSnapchot(Message message)
-    {
-        DebugScreen.bytesDown += message.WrittenLength;
-        DebugScreen.packetsDown++;
-
-        Snapshot snapshot;
-        snapshot.DeliveryTime = Time.time;
-        snapshot.Tick = message.GetInt();
-        snapshot.Position = message.GetVector3();
-        snapshot.Rotation = message.GetQuaternion();
-        snapshot.Velocity = message.GetVector3();
-        snapshot.AngularVelocity = message.GetVector3();
-
-        if(Player.list.TryGetValue(Player.myId, out Player player))
-        {
-        player.simpleDS.ReceivedClientSnapshots.Enqueue(snapshot);
-        }
-
-
+        GUI.Box(new Rect(5f, 05f, 180f, 25f), $"RTT SIMULATION {RTT * 1000f}");
+        GUI.Box(new Rect(5f, 35f, 180f, 25f), $"PACKET LOSS {PACKET_LOSS * 100f} %");
+        GUI.Box(new Rect(5f, 65f, 180f, 25f), $"STORED COMMANDS {inputCmd.Inputs?.Count}");
+        GUI.Box(new Rect(5f, 95f, 180f, 25f), $"LAST TICK {ClientLastAckedTick}");
+        GUI.Box(new Rect(5f, 125f, 180f, 25f), $"PREDICTED TICK {ClientTick}");
+        GUI.Box(new Rect(5f, 155f, 180f, 25f), $"SERVER TICK {ServerTick}");
+        GUI.Box(new Rect(5f, 185f, 180f, 25f), $"FPS {fps}");
     }
 }
