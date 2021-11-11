@@ -119,6 +119,7 @@ public class PlayerInput : MonoBehaviour
         inputStateCache = new ClientInputState[STATE_CACHE_SIZE];
         inputState = new ClientInputState();
     }
+
     void Start()
     {
         consoleUI = FindObjectOfType<ConsoleUI>();
@@ -160,7 +161,10 @@ public class PlayerInput : MonoBehaviour
         ++simulationFrame;
 
         // Add position to interpolate
-        //playerManager.interpolation.PlayerUpdate(simulationFrame, transform.position);
+
+        if (playerManager.interpolation.implementation == Interpolation.InterpolationImplemenation.alex) playerManager.interpolation.PreviousPosition = rb.position;
+        if (playerManager.interpolation.implementation == Interpolation.InterpolationImplemenation.notAGoodUsername) playerManager.interpolation.PlayerUpdate(simulationFrame, rb.position);
+        if (playerManager.interpolation.implementation == Interpolation.InterpolationImplemenation.tomWeiland) playerManager.interpolation.tomWeilandInterpolation.NewUpdate(simulationFrame, rb.position);
     }
 
     private void Update()
@@ -211,7 +215,7 @@ public class PlayerInput : MonoBehaviour
     #region New System
     private void SecondProcessInput(ClientInputState inputs)
     {
-        RotationCheck(inputs);
+        //RotationCheck(inputs);
 
         rb.isKinematic = false;
 
@@ -231,7 +235,7 @@ public class PlayerInput : MonoBehaviour
 
         SetStateAndRollback(ref SimulationSteps[stateSlot], rb);
 
-        playerManager.simpleDS.PreviousPosition = SimulationSteps[stateSlot].Position;
+        playerManager.interpolation.PreviousPosition = SimulationSteps[stateSlot].Position;
 
         //SendInputCommand();
 
@@ -296,7 +300,6 @@ public class PlayerInput : MonoBehaviour
 
         CalculateVelocity(inputs);
         Physics.Simulate(LogicTimer.FixedDelta);
-        playerManager.simpleDS.PreviousPosition = rb.position;
 
         velocity = rb.velocity;
         rb.isKinematic = true;

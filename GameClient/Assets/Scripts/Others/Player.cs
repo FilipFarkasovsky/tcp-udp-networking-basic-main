@@ -6,16 +6,11 @@ public class Player : MonoBehaviour
 {
     public static ushort myId = 0;
     public static Dictionary<ushort, Player> list = new Dictionary<ushort, Player>();
-    public SimpleDS simpleDS;
 
     public ushort id;
     public string username;
 
-    static Convar interpolationScript = new Convar("interpolationScript", 2, "Camera rotation sensitivity", Flags.CLIENT);
-
-    public SnapshotStDev snapshotStDev;
     public Interpolation interpolation;
-    public SimpleInterpolation simpleInterpolation;
 
     public Interpolation cameraInterpolation;
     public PlayerAnimation playerAnimation;
@@ -98,37 +93,23 @@ public class Player : MonoBehaviour
             if (serverTick > GlobalVariables.serverTick)
                 GlobalVariables.serverTick = serverTick;
 
-            switch (interpolationScript.GetValue())
+            switch (player.interpolation.implementation)
             {
-                case 1:
-                    player.snapshotStDev.enabled = true;
-                    player.interpolation.enabled = false;
-                    player.simpleInterpolation.enabled = false;
-                    player.snapshotStDev.Server.transform.position = position;
-                    player.snapshotStDev.ServerSnapshot();
-                    break;
-                case 2:
-                    player.snapshotStDev.enabled = false;
-                    player.interpolation.enabled = true;
-                    player.simpleInterpolation.enabled = false;
+                case Interpolation.InterpolationImplemenation.notAGoodUsername:
                     player.interpolation.NewUpdate(serverTick, position);
                     break;
-                case 3:
-                    player.snapshotStDev.enabled = false;
-                    player.interpolation.enabled = false;
-                    player.simpleInterpolation.enabled = true;
-                    player.interpolation.NewUpdate(serverTick, position);
+                case Interpolation.InterpolationImplemenation.alex:
+                    //player.snapshotStDev.Server.transform.position = position;
+                    //player.snapshotStDev.ServerSnapshot();
+                    break;
+                case Interpolation.InterpolationImplemenation.tomWeiland:
+                    player.interpolation.tomWeilandInterpolation.NewUpdate(serverTick, position);
                     break;
                 default:
                     break;
             }
 
-            if(player.cameraInterpolation)player.cameraInterpolation.NewUpdate(serverTick, _rotation);
-
-            //player.interpolation.NewUpdate(serverTick, position);
-            //player.simpleInterpolation.NewUpdate(serverTick, position);
-            //player.snapshotStDev.Server.transform.position = position;
-            //player.snapshotStDev.ServerSnapshot();
+            if (player.cameraInterpolation)player.cameraInterpolation.NewUpdate(serverTick, _rotation);
         }
     }
 

@@ -160,6 +160,8 @@ public class Player : MonoBehaviour
     #region New System
     private void SecondProcessInput(ClientInputState inputs)
     {
+        //RotationCheck(inputs);
+
         rb.isKinematic = false;
 
         Vector3 direction = default;

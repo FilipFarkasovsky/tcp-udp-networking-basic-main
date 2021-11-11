@@ -4,6 +4,9 @@ using UnityEngine;
 public class Interpolation : MonoBehaviour
 {
     [SerializeField] public InterpolationMode mode;
+    [SerializeField] public InterpolationImplemenation implementation;
+    [SerializeField] public InterpolationTarget target;
+    public SimpleInterpolation tomWeilandInterpolation;
 
     static public Convar interpolation = new Convar("cl_interp", 0.1f, "Visual delay for received updates", Flags.CLIENT, 0f, 0.5f);
 
@@ -29,6 +32,19 @@ public class Interpolation : MonoBehaviour
     public bool Delay = false;
     public bool WaitForLerp = false;
 
+    // ---------      ALEX
+
+    float FixedStepAccumulator;
+    [SerializeField] Transform clientSimObject;
+    public Vector3 PreviousPosition;
+
+    private void OnGUI()
+    {
+        GUI.Box(new Rect(5f, 5f, 180f, 25f), $"FUTURE COMMANDS {futureTransformUpdates?.Count}");
+        GUI.Box(new Rect(5f, 35f, 180f, 25f), $"LAST POSITION {current.lastPosition}");
+        GUI.Box(new Rect(5f, 65f, 180f, 25f), $"CURRENT POSITION {current.position}");
+    }
+
     private void Start()
     {
         if (isLocalPlayer)
@@ -52,82 +68,94 @@ public class Interpolation : MonoBehaviour
 
         current = new TransformUpdate(currentTick, Time.time, Time.time, transform.position, transform.position, transform.rotation, transform.rotation);
     }
+    
     private void Update()
     {
-        if (Sync)
+        switch (implementation)
         {
-            // There is no updates to lerp from, return
-            if (futureTransformUpdates.Count <= 0 || futureTransformUpdates[0] == null)
-                return;
+            case InterpolationImplemenation.notAGoodUsername:
+                NotAGoodUsername();
+                tomWeilandInterpolation.enabled = false;
+                break;
+            case InterpolationImplemenation.alex:
+                Alex();
+                tomWeilandInterpolation.enabled = false;
+                break;
+            case InterpolationImplemenation.tomWeiland:
+                tomWeilandInterpolation.enabled = true;
+                break;
+        }
+    }
 
-            TransformUpdate last = TransformUpdate.zero;
-            foreach (TransformUpdate update in futureTransformUpdates.ToArray())
+    private void NotAGoodUsername()
+    {
+        switch (target)
+        {
+            case InterpolationTarget.localPlayer:
+                LocalPlayerUpdate();
+                break;
+            case InterpolationTarget.syncedRemote:
+                SyncedUpdate();
+                break;
+            case InterpolationTarget.nonSyncedRemote:
+                NonSyncedUpdate();
+                break;
+        }
+    }
+
+    private void Alex()
+    {
+        switch (target)
+        {
+            case InterpolationTarget.localPlayer:
+                LocalPlayerDeltaSnapshotUpdate();
+                break;
+            case InterpolationTarget.syncedRemote:
+                RemotePlayerDeltaSnapshot();
+                break;
+            case InterpolationTarget.nonSyncedRemote:
+                RemotePlayerDeltaSnapshot();
+                break;
+        }
+    }
+
+    // NotAGoodUsername implementation
+    // Used for syncing players - every player has same lerp amount
+    // Sync is needed for entities that have lag compensation implemented
+    private void SyncedUpdate()
+    {
+        // There is no updates to lerp from, return
+        if (futureTransformUpdates.Count <= 0 || futureTransformUpdates[0] == null)
+            return;
+
+        TransformUpdate last = TransformUpdate.zero;
+        foreach (TransformUpdate update in futureTransformUpdates.ToArray())
+        {
+            if (update == null || update == TransformUpdate.zero)
             {
-                if (update == null || update == TransformUpdate.zero)
-                {
-                    futureTransformUpdates.Remove(update);
-                    continue;
-                }
-
-                // if tick < current client tick - interpolation amount, then remove
-                if (update.tick < GlobalVariables.clientTick - Utils.timeToTicks(interpolation.GetValue()))
-                {
-                    futureTransformUpdates.Remove(update);
-                    continue;
-                }
-
-                if (update.tick <= last?.tick)
-                {
-                    futureTransformUpdates.Remove(update);
-                    continue;
-                }
-
-                // Purpose: Add fake packets in between real ones, to account for packet loss
-                if (last != TransformUpdate.zero)
-                {
-                    // Get tick difference
-                    int tickDifference = update.tick - last.tick;
-                    if (tickDifference > 1 && !(tickDifference < 0))
-                    {
-                        // Loop through every tick till getting to the last tick,
-                        // which we dont use since it is the current tick
-                        TransformUpdate lastInForLoop = last;
-                        for (int j = 1; j < tickDifference; j++)
-                        {
-                            // Create new update
-                            TransformUpdate inBetween = TransformUpdate.zero;
-
-                            // Calculate the fraction in between the ticks
-                            float fraction = (float)j / (float)tickDifference;
-
-                            // Set corresponding last values
-                            inBetween.lastPosition = lastInForLoop.position;
-                            inBetween.lastRotation = lastInForLoop.rotation;
-                            inBetween.lastTime = lastInForLoop.time;
-
-                            // Lerp with the given fraction
-                            inBetween.position = Vector3.Lerp(inBetween.lastPosition, update.position, fraction);
-                            inBetween.rotation = Quaternion.Slerp(inBetween.lastRotation, update.rotation, fraction);
-                            inBetween.time = Mathf.Lerp(lastInForLoop.time, update.time, fraction);
-
-                            // Set new tick
-                            inBetween.tick = lastInForLoop.tick + 1;
-
-                            // Insert new update
-                            futureTransformUpdates.Insert(futureTransformUpdates.IndexOf(lastInForLoop), inBetween);
-
-                            // Last tick is now the inserted tick
-                            lastInForLoop = inBetween;
-
-                            // Set current tick proper last positions
-                            update.lastPosition = lastInForLoop.lastPosition;
-                            update.lastRotation = lastInForLoop.rotation;
-                            update.lastTime = lastInForLoop.time;
-                        }
-                    }
-                }
-                last = update;
+                futureTransformUpdates.Remove(update);
+                continue;
             }
+
+            // if tick < current client tick - interpolation amount, then remove
+            if (update.tick < GlobalVariables.clientTick - Utils.timeToTicks(interpolation.GetValue()))
+            {
+                futureTransformUpdates.Remove(update);
+                continue;
+            }
+
+            if (update.tick <= last?.tick)
+            {
+                futureTransformUpdates.Remove(update);
+                continue;
+            }
+
+            // Purpose: Add fake packets in between real ones, to account for packet loss
+            if (last != TransformUpdate.zero)
+            {
+                AccountForPacketLoss(update, last);
+            }
+            last = update;
         }
 
         // There is no updates to lerp from, return
@@ -141,67 +169,155 @@ public class Interpolation : MonoBehaviour
         if (Time.time - current.time <= Utils.roundTimeToTimeStep(interpolation.GetValue()) && Delay)
             return;
 
-        if (!Sync)
+        // Lerp amount moved to the next loop but the current target didnt move to the next tick, so dont interpolate
+        if (lastTick == current.tick && GlobalVariables.lerpAmount < lastLerpAmount)
+            return;
+
+        Interpolate(GlobalVariables.lerpAmount);
+        lastTick = current.tick;
+        lastLerpAmount = GlobalVariables.lerpAmount;
+    }
+
+    // NotAGoodUsername implementation
+    // Used for LocalPlayer
+    private void LocalPlayerUpdate()
+    {
+        // There is no updates to lerp from, return
+        if (futureTransformUpdates.Count <= 0 || futureTransformUpdates[0] == null)
+            return;
+
+        // Set current tick
+        current = futureTransformUpdates[0];
+
+        // If (time - time tick) <= interpolation amount, return
+        if (Time.time - current.time <= Utils.roundTimeToTimeStep(interpolation.GetValue()) && Delay)
+            return;
+
+        timeElapsed = (timeElapsed * Utils.TickInterval() + Time.deltaTime) / Utils.TickInterval();
+
+        Interpolate(timeElapsed);
+
+        // While we have reached the target, move to the next and repeat
+        while (ReachedTarget(timeElapsed))
         {
-            if (isLocalPlayer)
-            {
-                timeElapsed = (timeElapsed * Utils.TickInterval() + Time.deltaTime) / Utils.TickInterval();
+            timeElapsed = (timeElapsed * Utils.TickInterval() - Utils.TickInterval()) / Utils.TickInterval();
+            timeElapsed = Mathf.Max(0f, timeElapsed);
 
-                Interpolate(timeElapsed);
+            if (futureTransformUpdates.Count <= 0)
+                break;
 
-                // While we have reached the target, move to the next and repeat
-                while (ReachedTarget(timeElapsed))
-                {
-                    timeElapsed = (timeElapsed * Utils.TickInterval() - Utils.TickInterval()) / Utils.TickInterval();
-                    timeElapsed = Mathf.Max(0f, timeElapsed);
+            futureTransformUpdates.RemoveAt(0);
+            if (futureTransformUpdates.Count <= 0)
+                break;
 
-                    if (futureTransformUpdates.Count <= 0)
-                        break;
-
-                    futureTransformUpdates.RemoveAt(0);
-                    if (futureTransformUpdates.Count <= 0)
-                        break;
-
-                    // Set current tick
-                    current = futureTransformUpdates[0];
-                }
-            }
-            else
-            {
-                timeElapsed += Time.deltaTime;
-
-                Interpolate(timeElapsed / timeToReachTarget);
-
-                // While we have reached the target, move to the next and repeat
-                while (ReachedTarget(timeElapsed / timeToReachTarget))
-                {
-                    timeElapsed -= timeToReachTarget;
-                    timeToReachTarget = Mathf.Abs(current.time - current.lastTime);
-
-                    if (futureTransformUpdates.Count <= 0)
-                        break;
-
-                    futureTransformUpdates.RemoveAt(0);
-                    if (futureTransformUpdates.Count <= 0)
-                        break;
-
-                    // Set current tick
-                    current = futureTransformUpdates[0];
-                }
-            }
+            // Set current tick
+            current = futureTransformUpdates[0];
         }
-        else
-        {
-            // Lerp amount moved to the next loop but the current target didnt move to the next tick, so dont interpolate
-            if (lastTick == current.tick && GlobalVariables.lerpAmount < lastLerpAmount)
-                return;
+    }
+    
+    // NotAGoodUsername implementation
+    // Used for entitities that don't require lag compensation
+    private void NonSyncedUpdate()
+    {
+        // There is no updates to lerp from, return
+        if (futureTransformUpdates.Count <= 0 || futureTransformUpdates[0] == null)
+            return;
 
-            Interpolate(GlobalVariables.lerpAmount);
-            lastTick = current.tick;
-            lastLerpAmount = GlobalVariables.lerpAmount;
+        // Set current tick
+        current = futureTransformUpdates[0];
+
+        // If (time - time tick) <= interpolation amount, return
+        if (Time.time - current.time <= Utils.roundTimeToTimeStep(interpolation.GetValue()) && Delay)
+            return;
+
+        timeElapsed += Time.deltaTime;
+
+        Interpolate(timeElapsed / timeToReachTarget);
+
+        // While we have reached the target, move to the next and repeat
+        while (ReachedTarget(timeElapsed / timeToReachTarget))
+        {
+            timeElapsed -= timeToReachTarget;
+            timeToReachTarget = Mathf.Abs(current.time - current.lastTime);
+
+            if (futureTransformUpdates.Count <= 0)
+                break;
+
+            futureTransformUpdates.RemoveAt(0);
+            if (futureTransformUpdates.Count <= 0)
+                break;
+
+            // Set current tick
+            current = futureTransformUpdates[0];
         }
     }
 
+    // NotAGoodUsername implementation
+    // Adds fake packets between real ones
+    private void AccountForPacketLoss(TransformUpdate update, TransformUpdate last)
+    {
+        // Get tick difference
+        int tickDifference = update.tick - last.tick;
+        if (tickDifference <= 1)
+            return;
+
+        // Loop through every tick till getting to the last tick,
+        // which we dont use since it is the current tick
+        TransformUpdate lastInForLoop = last;
+        for (int j = 1; j < tickDifference; j++)
+        {
+            // Create new update
+            TransformUpdate inBetween = TransformUpdate.zero;
+
+            // Calculate the fraction in between the ticks
+            float fraction = (float)j / (float)tickDifference;
+
+            // Set corresponding last values
+            inBetween.lastPosition = lastInForLoop.position;
+            inBetween.lastRotation = lastInForLoop.rotation;
+            inBetween.lastTime = lastInForLoop.time;
+
+            // Lerp with the given fraction
+            inBetween.position = Vector3.Lerp(inBetween.lastPosition, update.position, fraction);
+            inBetween.rotation = Quaternion.Slerp(inBetween.lastRotation, update.rotation, fraction);
+            inBetween.time = Mathf.Lerp(lastInForLoop.time, update.time, fraction);
+
+            // Set new tick
+            inBetween.tick = lastInForLoop.tick + 1;
+
+            // Insert new update
+            futureTransformUpdates.Insert(futureTransformUpdates.IndexOf(lastInForLoop), inBetween);
+
+            // Last tick is now the inserted tick
+            lastInForLoop = inBetween;
+
+            // Set current tick proper last positions
+            update.lastPosition = lastInForLoop.lastPosition;
+            update.lastRotation = lastInForLoop.rotation;
+            update.lastTime = lastInForLoop.time;
+        }
+    }
+
+    // Alex implementation
+    private void LocalPlayerDeltaSnapshotUpdate()
+    {
+        FixedStepAccumulator += Time.deltaTime;
+
+        while (FixedStepAccumulator >= Time.fixedDeltaTime)
+        {
+            FixedStepAccumulator -= Time.fixedDeltaTime;
+        }
+
+        float _alpha = Mathf.Clamp01(FixedStepAccumulator / Time.fixedDeltaTime);
+
+        transform.position = Vector3.Lerp(PreviousPosition, clientSimObject.position, _alpha);
+    }
+
+    // Alex implementation 
+    private void RemotePlayerDeltaSnapshot()
+    {
+
+    }
 
     // Returns if it has reached the targe when interpolating
     // WaitForLerp waits for _lerpAmount to reach 1
@@ -413,6 +529,20 @@ public class Interpolation : MonoBehaviour
     {
         both,
         position,
-        rotation
+        rotation,
+    }
+
+    public enum InterpolationImplemenation
+    {
+        notAGoodUsername,
+        alex,
+        tomWeiland,
+    }
+
+    public enum InterpolationTarget
+    {
+        localPlayer,
+        syncedRemote,
+        nonSyncedRemote,
     }
 }

@@ -84,7 +84,6 @@ public class SimpleDS : MonoBehaviour
     public Rigidbody ClientRb;
 
     [SerializeField] float RotationSpeed = 90;
-    float CamRotation;
 
     float FixedStepAccumulator;
 
@@ -120,9 +119,9 @@ public class SimpleDS : MonoBehaviour
 
         SmoothObject.transform.position = Vector3.Lerp(PreviousPosition, ClientSimObject.transform.position, _alpha);
 
-        CamRotation += Input.GetAxisRaw("Mouse X") * RotationSpeed;
-        CameraTransform.position = SmoothObject.transform.position;
-        CameraTransform.rotation = Quaternion.Euler(0, CamRotation, 0);
+        //CamRotation += Input.GetAxisRaw("Mouse X") * RotationSpeed;
+        //CameraTransform.position = SmoothObject.transform.position;
+        //CameraTransform.rotation = Quaternion.Euler(0, CamRotation, 0);
 
 
         if (Input.GetKeyDown(KeyCode.V))
@@ -264,7 +263,7 @@ public class SimpleDS : MonoBehaviour
 
         if(Player.list.TryGetValue(Player.myId, out Player player))
         {
-        player.simpleDS.ReceivedClientSnapshots.Enqueue(snapshot);
+        //player.interpolation.ReceivedClientSnapshots.Enqueue(snapshot);
         }
 
 

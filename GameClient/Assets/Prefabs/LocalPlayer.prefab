@@ -139,6 +139,7 @@ GameObject:
   - component: {fileID: 3623738070482514171}
   - component: {fileID: 686584917547256762}
   - component: {fileID: 686584917547256761}
+  - component: {fileID: 4908327976736570262}
   m_Layer: 0
   m_Name: Visual
   m_TagString: Untagged
@@ -169,18 +170,23 @@ MonoBehaviour:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 686584917547256760}
-  m_Enabled: 0
+  m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 550459fd92ac5814e9d5086ebf9874f1, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
   mode: 1
+  implementation: 1
+  target: 0
+  tomWeilandInterpolation: {fileID: 4908327976736570262}
   timeElapsed: 0
   timeToReachTarget: 0.03125
   isLocalPlayer: 1
   Sync: 0
   Delay: 0
   WaitForLerp: 0
+  clientSimObject: {fileID: 6857913383686175641}
+  PreviousPosition: {x: 0, y: 0, z: 0}
 --- !u!114 &686584917547256762
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -211,6 +217,22 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   playerCamera: {fileID: 5335273175949450815}
+--- !u!114 &4908327976736570262
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 686584917547256760}
+  m_Enabled: 0
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 16e16345828b90745af9e79ae8faae68, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  mode: 0
+  timeElapsed: 0
+  timeToReachTarget: 0.1
+  isLocalRotation: 0
 --- !u!1 &746358305052123876
 GameObject:
   m_ObjectHideFlags: 0
@@ -258,12 +280,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: c8a3d335e95e83044b9253b712d4a153, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  simpleDS: {fileID: 1199765220973309496}
   id: 0
   username: 
-  snapshotStDev: {fileID: 0}
   interpolation: {fileID: 3623738070482514171}
-  simpleInterpolation: {fileID: 0}
   cameraInterpolation: {fileID: 0}
   playerAnimation: {fileID: 686584917547256762}
 --- !u!114 &4673269170523267228
@@ -285,22 +304,20 @@ MonoBehaviour:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 746358305052123876}
-  m_Enabled: 1
+  m_Enabled: 0
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: daa411bddda2012458e71003393b907c, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  RTT: 0
-  PACKET_LOSS: 0
   ClientSimObject: {fileID: 5358212050909483801, guid: 6e1fecb86eb281a4e90e15d6f1a41d4e, type: 3}
-  ServerSimObject: {fileID: 2750909099132258570, guid: a7ee41a6ea24b934dab0a3e13ca9c138, type: 3}
   SmoothObject: {fileID: 686584917547256760}
   CameraTransform: {fileID: 5335273175949450815}
   ClientTick: 0
   ClientLastAckedTick: 0
-  ServerTick: 0
   playerManager: {fileID: 1104979204006787731}
+  ClientRb: {fileID: 5165403676985187221}
   RotationSpeed: 90
+  PreviousPosition: {x: 0, y: 0, z: 0}
 --- !u!1 &2422175351212115803
 GameObject:
   m_ObjectHideFlags: 0
@@ -686,7 +703,7 @@ MonoBehaviour:
   m_RequiresOpaqueTextureOption: 2
   m_CameraType: 0
   m_Cameras: []
-  m_RendererIndex: -1
+  m_RendererIndex: 0
   m_VolumeLayerMask:
     serializedVersion: 2
     m_Bits: 1
@@ -1502,7 +1519,7 @@ MonoBehaviour:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 8549839970345080392}
-  m_Enabled: 0
+  m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 71a16c1e9321b024b891e91737914bce, type: 3}
   m_Name: 
@@ -1516,6 +1533,8 @@ MonoBehaviour:
     m_Bits: 64
   checkRadius: 0.485
   velocity: {x: 0, y: 0, z: 0}
+  ClientTick: 0
+  ClientLastAckedTick: 0
 --- !u!136 &8945124884157084871
 CapsuleCollider:
   m_ObjectHideFlags: 0
@@ -1526,7 +1545,7 @@ CapsuleCollider:
   m_Material: {fileID: 13400000, guid: 403eaf048cbec0f4eb26b136ab8762e0, type: 2}
   m_IsTrigger: 0
   m_Enabled: 1
-  m_Radius: 0.2
+  m_Radius: 0.5
   m_Height: 2
   m_Direction: 1
   m_Center: {x: 0, y: 0, z: 0}
@@ -1544,7 +1563,7 @@ Rigidbody:
   m_UseGravity: 1
   m_IsKinematic: 0
   m_Interpolate: 0
-  m_Constraints: 0
+  m_Constraints: 112
   m_CollisionDetection: 0
 --- !u!114 &1432326055704067981
 MonoBehaviour:
