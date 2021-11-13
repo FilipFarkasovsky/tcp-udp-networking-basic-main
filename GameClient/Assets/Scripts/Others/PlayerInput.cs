@@ -104,6 +104,8 @@ public class PlayerInput : MonoBehaviour
     Queue<Snapshot> ReceivedClientSnapshots;
     SimulationStep[] SimulationSteps;
     InputCmd inputCmd;
+    public SimpleDS simpleDS;
+    bool vsyncToggle;
 
 
     private void Awake()
@@ -169,6 +171,12 @@ public class PlayerInput : MonoBehaviour
 
     private void Update()
     {
+        if (Input.GetKeyDown(KeyCode.V))
+        {
+            vsyncToggle = !vsyncToggle;
+            QualitySettings.vSyncCount = vsyncToggle ? 1 : 0;
+        }
+
         // Console is open, dont move
         if (consoleUI.isActive())
         {
@@ -300,6 +308,8 @@ public class PlayerInput : MonoBehaviour
 
         CalculateVelocity(inputs);
         Physics.Simulate(LogicTimer.FixedDelta);
+
+        //playerManager.interpolation.PreviousPosition = rb.position;
 
         velocity = rb.velocity;
         rb.isKinematic = true;

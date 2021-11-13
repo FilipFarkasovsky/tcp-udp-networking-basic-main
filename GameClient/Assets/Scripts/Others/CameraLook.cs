@@ -19,7 +19,7 @@ public class CameraLook : MonoBehaviour
         consoleUI = FindObjectOfType<ConsoleUI>();
     }
 
-    private void Update()
+    private void FixedUpdate()
     {
         if (consoleUI.isActive())
             return;
