@@ -764,7 +764,7 @@ Transform:
   m_GameObject: {fileID: 806511228}
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: 0, y: -2, z: 0}
-  m_LocalScale: {x: 20, y: 1, z: 20}
+  m_LocalScale: {x: 25, y: 1, z: 25}
   m_Children: []
   m_Father: {fileID: 0}
   m_RootOrder: 3
@@ -987,6 +987,7 @@ MonoBehaviour:
   port: 26950
   localPlayerPrefab: {fileID: 4634531960378573312, guid: b92d19da70d3f5e45b69622abd286740, type: 3}
   playerPrefab: {fileID: 2033447657606561636, guid: d4b255f9feb42fb49b103418ae4f983a, type: 3}
+  enemyPrefab: {fileID: 6710017344269656773, guid: 14efa3bf9f538db4fba33c936133a6b9, type: 3}
 --- !u!4 &1566324440
 Transform:
   m_ObjectHideFlags: 0

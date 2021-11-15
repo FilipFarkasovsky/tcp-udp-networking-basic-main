@@ -50,9 +50,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   id: 0
   username: 
-  snapshotStDev: {fileID: 8853338562028519016}
   interpolation: {fileID: 2033447657606561222}
-  simpleInterpolation: {fileID: 2750777293876604067}
   cameraInterpolation: {fileID: 8067417399293115910}
   playerAnimation: {fileID: 7553815535291750560}
 --- !u!114 &2033447657606561222
@@ -62,18 +60,24 @@ MonoBehaviour:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 2033447657606561636}
-  m_Enabled: 0
+  m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 550459fd92ac5814e9d5086ebf9874f1, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
   mode: 1
+  implementation: 1
+  target: 1
+  tomWeilandInterpolation: {fileID: 2750777293876604067}
+  snapshotStDev: {fileID: 8853338562028519016}
   timeElapsed: 0
   timeToReachTarget: 0.1
   isLocalPlayer: 0
   Sync: 1
   Delay: 0
   WaitForLerp: 0
+  clientSimObject: {fileID: 7553815535291750561}
+  PreviousPosition: {x: 0, y: 0, z: 0}
 --- !u!114 &2750777293876604067
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -112,7 +116,6 @@ MonoBehaviour:
   SNAPSHOT_OFFSET_COUNT: 2
   INTERP_NEGATIVE_THRESHOLD: 0
   INTERP_POSITIVE_THRESHOLD: 0
-  random: 0
 --- !u!1 &3731679952614342348
 GameObject:
   m_ObjectHideFlags: 0
@@ -500,18 +503,24 @@ MonoBehaviour:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 7553815534999405603}
-  m_Enabled: 1
+  m_Enabled: 0
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 550459fd92ac5814e9d5086ebf9874f1, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
   mode: 2
+  implementation: 0
+  target: 0
+  tomWeilandInterpolation: {fileID: 0}
+  snapshotStDev: {fileID: 0}
   timeElapsed: 0
   timeToReachTarget: 0.1
   isLocalPlayer: 0
   Sync: 1
   Delay: 0
   WaitForLerp: 0
+  clientSimObject: {fileID: 0}
+  PreviousPosition: {x: 0, y: 0, z: 0}
 --- !u!1 &7553815535101013620
 GameObject:
   m_ObjectHideFlags: 0

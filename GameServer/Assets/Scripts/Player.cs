@@ -32,8 +32,6 @@ public class Player : MonoBehaviour
     private int lastFrame;
     private Queue<ClientInputState> clientInputs = new Queue<ClientInputState>();
 
-    //static LogicTimer logicTimer;
-
     public bool isFiring;
     public float lateralSpeed;
     public float forwardSpeed;
@@ -91,28 +89,39 @@ public class Player : MonoBehaviour
     #endregion
 
     //-----------
+
     /// <summary>Sends a player's info to the given client.</summary>
     /// <param name="toClient">The client to send the message to.</param>
     public void SendSpawn(ushort toClient)
     {
-        NetworkManager.Singleton.Server.Send(GetSpawnData(Message.Create(MessageSendMode.reliable, (ushort)ServerToClientId.spawnPlayer)), toClient);
-    }
-    /// <summary>Sends a player's info to all clients.</summary>
-    private void SendSpawn()
-    {
-        NetworkManager.Singleton.Server.SendToAll(GetSpawnData(Message.Create(MessageSendMode.reliable, (ushort)ServerToClientId.spawnPlayer)));
-    }
-
-    private Message GetSpawnData(Message message)
-    {
+        Message message = Message.Create(MessageSendMode.reliable, (ushort)ServerToClientId.spawnPlayer);
         message.Add(id);
         message.Add(username);
         message.Add(transform.position);
-        return message;
+        NetworkManager.Singleton.Server.Send(message, toClient);
     }
 
+    /// <summary>Sends a player's info to all clients.</summary>
+    private void SendSpawn()
+    {
+        Message message = Message.Create(MessageSendMode.reliable, (ushort)ServerToClientId.spawnPlayer);
+        message.Add(id);
+        message.Add(username);
+        message.Add(transform.position);
+        NetworkManager.Singleton.Server.SendToAll(message);
+    }
 
-    //-----------
+    public void Destroy()
+    {
+        //logicTimer.Stop();
+        Destroy(gameObject);
+    }
+
+    private void OnDestroy()
+    {
+        List.Remove(id);
+    }
+
     private void Awake()
     {
         rb.freezeRotation = true;
@@ -120,10 +129,7 @@ public class Player : MonoBehaviour
         lastFrame = 0;
         //logicTimer = new LogicTimer(() => FixedTime());
     }
-    private void OnDestroy()
-    {
-        List.Remove(id);
-    }
+
     public static void Spawn(ushort id, string username)
     {
         Player player = Instantiate(NetworkManager.Singleton.PlayerPrefab, new Vector3(0f, 1f, 0f), Quaternion.identity).GetComponent<Player>();
@@ -135,25 +141,16 @@ public class Player : MonoBehaviour
         player.SendSpawn();
         List.Add(player.id, player);
     }
+
     private void Start()
     {
         //logicTimer.Start();
     }
-    private void Update()
-    {
-        //logicTimer.Update();
-    }
-    public void Destroy()
-    {
-        //logicTimer.Stop();
-        Destroy(gameObject);
-    }
 
-    
     void FixedUpdate()
     {
         ProcessInputs();
-        SendMessages.PlayerTransform(this);
+        SendMessages.SetTransform(this);
         SendMessages.PlayerAnimation(this);
     }
 

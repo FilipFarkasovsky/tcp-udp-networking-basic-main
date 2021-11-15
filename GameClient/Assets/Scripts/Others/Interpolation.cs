@@ -7,6 +7,7 @@ public class Interpolation : MonoBehaviour
     [SerializeField] public InterpolationImplemenation implementation;
     [SerializeField] public InterpolationTarget target;
     public SimpleInterpolation tomWeilandInterpolation;
+    public SnapshotStDev snapshotStDev;
 
     static public Convar interpolation = new Convar("cl_interp", 0.1f, "Visual delay for received updates", Flags.CLIENT, 0f, 0.5f);
 

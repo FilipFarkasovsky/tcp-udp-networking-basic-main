@@ -5,9 +5,10 @@ using UnityEngine;
 public enum ServerToClientId : ushort
 {
     spawnPlayer = 1,
-    playerPosition,
-    playerRotation,
-    playerTransform,
+    spawnEnemy,
+    setPosition,
+    setRotation,
+    setTransform,
     playerAnimation,
     serverSimulationState,
     serverConvar,
@@ -43,9 +44,10 @@ public class NetworkManager : MonoBehaviour
     public int tick = 0;
     [SerializeField] private ushort port;
     public ushort maxClientCount;
-    [SerializeField] private GameObject playerPrefab;
 
+    [SerializeField] private GameObject playerPrefab;
     public GameObject PlayerPrefab => playerPrefab;
+
     public Server Server { get; private set; }
 
     public Convar tickrate = new Convar("sv_tickrate", 32, "Ticks per second", Flags.NETWORK, 1, 128);
@@ -76,6 +78,7 @@ public class NetworkManager : MonoBehaviour
 
         LagCompensation.Start(maxClientCount);
         Server.Start(port, maxClientCount);
+        StartCoroutine(EnemySpawning.Singleton.StartSpawning());
     }
 
     private void FixedUpdate()
@@ -114,6 +117,12 @@ public class NetworkManager : MonoBehaviour
         {
             if (player.id != e.Client.Id)
                 player.SendSpawn(e.Client.Id);
+        }
+
+        foreach (Enemy enemy in Enemy.List.Values)
+        {
+            if (enemy.id != e.Client.Id)
+                enemy.SendSpawn(e.Client.Id);
         }
     }
 

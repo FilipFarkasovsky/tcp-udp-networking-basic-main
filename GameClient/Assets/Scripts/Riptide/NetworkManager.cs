@@ -6,9 +6,10 @@ using UnityEngine;
 public enum ServerToClientId : ushort
 {
     spawnPlayer = 1,
-    playerPosition,
-    playerRotation,
-    playerTransform,
+    spawnEnemy,
+    setPosition,
+    setRotation,
+    setTransform,
     playerAnimation,
     serverSimulationState,
     serverConvar,
@@ -22,7 +23,6 @@ public enum ClientToServerId : ushort
     playerConvar,
     inputCommand,
 }
-
 
 public class NetworkManager : MonoBehaviour
 {
@@ -45,12 +45,16 @@ public class NetworkManager : MonoBehaviour
     public string ip;
     public ushort port;
 
-    [SerializeField] private GameObject localPlayerPrefab;
-    [SerializeField] private GameObject playerPrefab;
-
     public static Convar tickrate = new Convar("sv_tickrate", 32, "Ticks per second", Flags.NETWORK, 1, 128);
+
+    [SerializeField] private GameObject localPlayerPrefab;
     public GameObject LocalPlayerPrefab => localPlayerPrefab;
+
+    [SerializeField] private GameObject playerPrefab;
     public GameObject PlayerPrefab => playerPrefab;
+
+    [SerializeField] private GameObject enemyPrefab;
+    public GameObject EnemyPrefab => enemyPrefab;
 
     public Client Client { get; private set; }
     private static LogicTimer logicTimer;
@@ -64,19 +68,12 @@ public class NetworkManager : MonoBehaviour
     {
         RiptideLogger.Initialize(Debug.Log, false);
 
-        //logicTimer = new LogicTimer(() => FixedTime());
-        //logicTimer.Start();
-
         Client = new Client(new RudpClient());
 
         Client.Connected += DidConnect;
         Client.ConnectionFailed += FailedToConnect;
         Client.ClientDisconnected += PlayerLeft;
         Client.Disconnected += DidDisconnect;
-    }
-
-    private void Update(){
-        //logicTimer.Update();
     }
 
     private void FixedUpdate()

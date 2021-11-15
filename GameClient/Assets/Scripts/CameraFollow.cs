@@ -28,7 +28,7 @@ public class CameraFollow : MonoBehaviour
 
     IEnumerator FindPlayer()
     {
-        GameObject target = GameObject.FindGameObjectWithTag("LocalPlayer");
+        GameObject target = GameObject.FindGameObjectWithTag("Player");
         if (target != null)
         {
             FollowTarget = target.transform;
