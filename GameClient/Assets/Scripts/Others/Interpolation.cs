@@ -44,6 +44,9 @@ public class Interpolation : MonoBehaviour
         GUI.Box(new Rect(5f, 5f, 180f, 25f), $"FUTURE COMMANDS {futureTransformUpdates?.Count}");
         GUI.Box(new Rect(5f, 35f, 180f, 25f), $"LAST POSITION {current.lastPosition}");
         GUI.Box(new Rect(5f, 65f, 180f, 25f), $"CURRENT POSITION {current.position}");
+        GUI.Box(new Rect(5f, 95f, 180f, 25f), $"FPS {1000f/DebugScreen.framesPerSec}");
+        GUI.Box(new Rect(5f, 125f, 180f, 25f), $"PING {DebugScreen.ping}");
+        GUI.Box(new Rect(5f, 155f, 180f, 25f), $"MISPREDICTIONS {DebugScreen.mispredictions}");
     }
 
     private void Start()

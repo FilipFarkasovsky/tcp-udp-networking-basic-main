@@ -20,7 +20,7 @@ public class DebugScreen : MonoBehaviour
     //*********         HELP VARIABLES          ***********//
     private float time;
 
-    private int ping;
+    public static int ping;
     private int frameCount;
     public static int mispredictions = 0; 
     public static int bytesUp = 0;
@@ -29,7 +29,7 @@ public class DebugScreen : MonoBehaviour
     public static int packetsDown = 0;
 
 
-    private int framesPerSec;
+    public static int framesPerSec;
     private static int bytesUpPerSec;
     private static int bytesDownPerSec;
     private static int packetsUpPerSec;
@@ -64,23 +64,23 @@ public class DebugScreen : MonoBehaviour
 
 
 
-        FPS.text = $"{1000f/framesPerSec:#.#} ms {framesPerSec} FPS";
-        Tickrate.text = $"tickrate: {1 / Utils.TickInterval()}/s {Utils.TickInterval()*1000f} ms";
-        Ping.text = $"ping: {ping} m/s";
-        Mispred.text = $"mispredictions: {mispredictions} total";
-        BytesUp.text = $"byteUp: {bytesUpPerSec}/s";
-        BytesDown.text = $"byteDown: {bytesDownPerSec}/s";
-        PacketsUp.text = $"byteUp: {packetsUpPerSec}/s";
-        PacketsDown.text = $"byteDown: {packetsDownPerSec}/s";
-        Gos.text = $"gos active: {GameObject.FindObjectsOfType(typeof(MonoBehaviour)).Length} gos total: {1}";
-        Ram.text = $"ram: {0} mb";
+        //FPS.text = $"{1000f/framesPerSec:#.#} ms {framesPerSec} FPS";
+        //Tickrate.text = $"tickrate: {1 / Utils.TickInterval()}/s {Utils.TickInterval()*1000f} ms";
+        //Ping.text = $"ping: {ping} m/s";
+        //Mispred.text = $"mispredictions: {mispredictions} total";
+        //BytesUp.text = $"byteUp: {bytesUpPerSec}/s";
+        //BytesDown.text = $"byteDown: {bytesDownPerSec}/s";
+        //PacketsUp.text = $"byteUp: {packetsUpPerSec}/s";
+        //PacketsDown.text = $"byteDown: {packetsDownPerSec}/s";
+        //Gos.text = $"gos active: {GameObject.FindObjectsOfType(typeof(MonoBehaviour)).Length} gos total: {1}";
+        //Ram.text = $"ram: {0} mb";
 
-        if(1000f/framesPerSec >= Utils.TickInterval() * 1000f){
-            Mispred.color = Color.red;
-        }
-        else{
-            Mispred.color = Color.white;
-        }
+        //if(1000f/framesPerSec >= Utils.TickInterval() * 1000f){
+        //    Mispred.color = Color.red;
+        //}
+        //else{
+        //    Mispred.color = Color.white;
+        //}
 
         
         if(time >= 1f){
