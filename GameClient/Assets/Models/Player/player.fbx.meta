@@ -489,13 +489,13 @@ ModelImporter:
       scale: {x: 1, y: 1, z: 1}
     - name: Armature
       parentName: player(Clone)
-      position: {x: -3.182734e-15, y: -1, z: -0.011557587}
-      rotation: {x: -0.7071068, y: 0, z: -0, w: 0.7071067}
+      position: {x: 0, y: -1, z: 0}
+      rotation: {x: -0.7071068, y: 0, z: 0, w: 0.7071068}
       scale: {x: 1, y: 1, z: 1}
     - name: Hips
       parentName: Armature
       position: {x: -0.00075905776, y: -0.00000011920929, z: 0.9399161}
-      rotation: {x: 0.7243577, y: 0.000000014901151, z: 0.00000010430814, w: 0.6894244}
+      rotation: {x: 0.7071068, y: 0, z: 0, w: 0.7071068}
       scale: {x: 1, y: 0.9999999, z: 0.9999999}
     - name: Spine
       parentName: Hips
@@ -590,7 +590,7 @@ ModelImporter:
     - name: Middle03.L
       parentName: Middle02.L
       position: {x: -0.000000013613185, y: 0.02539146, z: 0.000000004537728}
-      rotation: {x: -0.025685122, y: -0.53127897, z: -0.02486668, w: 0.8464424}
+      rotation: {x: -0.025685115, y: -0.53127897, z: -0.024866672, w: 0.8464424}
       scale: {x: 0.9999999, y: 0.99999976, z: 0.9999999}
     - name: Middle03.L_end
       parentName: Middle03.L
@@ -770,7 +770,7 @@ ModelImporter:
     - name: Toe.L
       parentName: Foot.L
       position: {x: -0.000000034458374, y: 0.126803, z: 0.000000032047705}
-      rotation: {x: 0.1130714, y: -0.09785664, z: -0.0036155437, w: 0.9887496}
+      rotation: {x: 0.11307141, y: -0.09785664, z: -0.0036155442, w: 0.9887496}
       scale: {x: 1.0000001, y: 1, z: 1}
     - name: Toe.L_end
       parentName: Toe.L

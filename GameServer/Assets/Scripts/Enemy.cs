@@ -194,7 +194,7 @@ public class Enemy : MonoBehaviour
     private void OnDrawGizmos()
     {
         Gizmos.color = Color.red;
-        Gizmos.DrawWireSphere(player.position, 1f);
+        if(player != null)Gizmos.DrawWireSphere(player.position, 1f);
     }
     private void OnDrawGizmosSelected()
     {
