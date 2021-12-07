@@ -88,6 +88,70 @@ class CarPhysics : MonoBehaviour
 
     private void FixedUpdate()
     {
+        float vert = Input.GetAxis("Vertical");
+        float horz = Input.GetAxis("Horizontal");
+        steeringAngle = maxSteerAngle * horz;
+
+        veloc = Quaternion.Euler(0, - transform.rotation.eulerAngles.y, 0) * rb.velocity;
+        angularVelocity = rb.angularVelocity.y;
+        //Debug.Log(rb.angularVelocity);
+
+        // Rotate wheels
+        frontLeft.localRotation = Quaternion.Euler(0, steeringAngle, 90);
+        frontRight.localRotation = Quaternion.Euler(0, steeringAngle, 90);
+
+        //alpha represents the slip angle for each wheel
+        alphaFront = Vector3.Angle(frontLeft.forward, rb.velocity);
+        alphaRear = Vector3.Angle(transform.forward, rb.velocity);
+
+        alphaFront = Mathf.Atan((veloc.x + angularVelocity * b) / Mathf.Abs(veloc.z)) - steeringAngle * Mathf.Deg2Rad * Mathf.Sign(veloc.z);
+        alphaRear = Mathf.Atan((veloc.x - angularVelocity * c) / Mathf.Abs(veloc.z));
+
+        //this equation is an approxiamtion of values below the peak shown in the graph
+        lateralForceFront = new Vector3(-0.3f * alphaFront, 0f, 0f);
+        lateralForceRear = new Vector3(-0.3f * alphaRear, 0f, 0f);
+
+
+        //These values are supposed to represent the magnitudes of these velocities
+        //Vector3 longVelocityFront = Mathf.Cos(alphaFront * Mathf.Deg2Rad) * rb.velocity;
+        //Vector3 latVelocityFront = Mathf.Sin(alphaFront * Mathf.Deg2Rad) * rb.velocity;
+
+        //Vector3 longVelocityRear = Mathf.Cos(alphaRear * Mathf.Deg2Rad) * rb.velocity;
+        //Vector3 latVelocityRear = Mathf.Sin(alphaRear * Mathf.Deg2Rad) * rb.velocity;
+
+        //float frontSlipAngle = Mathf.Rad2Deg * Mathf.Atan((latVelocityFront.magnitude + (rb.angularVelocity.magnitude * b)) / longVelocityFront.magnitude) - ( steeringAngle);
+        //float rearSlipAngle = Mathf.Rad2Deg * Mathf.Atan((latVelocityRear.magnitude - (rb.angularVelocity.magnitude * c)) / longVelocityRear.magnitude);
+
+        //Debug.Log($"{(int)alphaFront}   {(int)frontSlipAngle}");
+        //Debug.Log($"{(int)alphaRear}   {(int)rearSlipAngle}");
+
+        //Calculates the lateral force of the wheels
+        Vector3 latFrontForce = lateralForceFront.normalized * (M * 10 / 2f) ;
+        Vector3 latRearForce = lateralForceRear.normalized * (M * 10 / 2f);
+
+        Vector3 frontTorque = Mathf.Cos(steeringAngle * Mathf.Deg2Rad) * latFrontForce * b;
+        Vector3 rearTorque = -latRearForce * c;
+
+        Vector3 corneringForce = latRearForce + Mathf.Cos(steeringAngle * Mathf.Deg2Rad) * latFrontForce;
+        Vector3 centripedalForce = corneringForce;
+        float steeringRadius = centripedalForce.magnitude / (rb.mass * Mathf.Pow(rb.velocity.magnitude, 2f));
+
+        Vector3 totalTorque = frontTorque + rearTorque;
+        Debug.Log($"{(int)totalTorque.magnitude}   {(int)corneringForce.magnitude}");
+        rb.AddRelativeTorque(totalTorque.x * Vector3.up);
+        rb.AddForce(engineForce * vert * transform.forward);
+        rb.AddRelativeForce(corneringForce);
+        //rb.AddForce(corneringForce.magnitude * transform.right * Mathf.Sign(corneringForce.z));
+
+        Debug.DrawRay(transform.position, Quaternion.Euler(0, transform.rotation.eulerAngles.y, 0) * veloc, Color.red);
+        Debug.DrawRay(transform.position, rb.velocity, Color.red);
+        Debug.DrawRay(transform.position, Quaternion.Euler(0, transform.rotation.eulerAngles.y, 0) * totalTorque / M * 5, Color.blue);
+        Debug.DrawRay(frontAxle.position, transform.forward * vert * 5, Color.green);
+
+        Debug.DrawRay(frontAxle.position, Quaternion.Euler(0, transform.rotation.eulerAngles.y, 0) * (latFrontForce) / M * 5, Color.yellow);
+        Debug.DrawRay(rearAxle.position, Quaternion.Euler(0, transform.rotation.eulerAngles.y, 0) * latRearForce / M * 5, Color.yellow);
+
+        /*
         // Get input
         float vert = Input.GetAxis("Vertical");
         float horz = Input.GetAxis("Horizontal");
@@ -133,6 +197,8 @@ class CarPhysics : MonoBehaviour
         forceLat = lateralForceRear + lateralForceFront * Mathf.Abs(Mathf.Cos(steeringAngle * Mathf.Deg2Rad)) * Mathf.Abs(totalResistance.x);
         forceNet = forceLong + forceLat + totalResistance;
 
+        
+
         // velocity
         acceleration = forceNet / M;
         veloc +=  acceleration * Time.deltaTime;
@@ -144,21 +210,23 @@ class CarPhysics : MonoBehaviour
         // toruqe
         torque = Mathf.Cos(steeringAngle * Mathf.Deg2Rad) * lateralForceFront.x * b - lateralForceRear.x * c;
         angularAcceleration = torque / rb.inertiaTensor.y;
-        angularAcceleration = torque / (M * (5f * 5f + 2f * 2f) / 12f /* + M * 2.5f * 2.5f*/);
+        angularAcceleration = torque / (M * (5f * 5f + 2f * 2f) / 12f + M * 2.5f * 2.5f);
         angularVelocity += Time.deltaTime * angularAcceleration;
         //transform.rotation = Quaternion.Euler(0, transform.rotation.eulerAngles.y + angularVelocity * Time.deltaTime * Mathf.Rad2Deg, 0);
-
+    
         rb.AddTorque(torque * Vector3.up, ForceMode.Force);
         rb.AddRelativeForce(forceNet);
+        */
+
         Physics.Simulate(Time.deltaTime);
 
         //Debug
-        Debug.DrawRay(transform.position, Quaternion.Euler(0, transform.rotation.eulerAngles.y, 0) * forceLong / M * 5, Color.red);
-        Debug.DrawRay(transform.position, Quaternion.Euler(0, transform.rotation.eulerAngles.y, 0) * forceLat / M * 5, Color.blue);
-        Debug.DrawRay(frontAxle.position, Quaternion.Euler(0, transform.rotation.eulerAngles.y, 0) * veloc * 5, Color.green);
+        //Debug.DrawRay(transform.position, Quaternion.Euler(0, transform.rotation.eulerAngles.y, 0) * forceLong / M * 5, Color.red);
+        //Debug.DrawRay(transform.position, Quaternion.Euler(0, transform.rotation.eulerAngles.y, 0) * forceLat / M * 5, Color.blue);
+        //Debug.DrawRay(frontAxle.position, Quaternion.Euler(0, transform.rotation.eulerAngles.y, 0) * veloc * 5, Color.green);
 
-        Debug.DrawRay(frontAxle.position, Quaternion.Euler(0, transform.rotation.eulerAngles.y, 0) * (forceLat - lateralForceRear)/ M * 5, Color.yellow);
-        Debug.DrawRay(rearAxle.position, Quaternion.Euler(0, transform.rotation.eulerAngles.y, 0) * lateralForceRear / M * 5, Color.yellow);
+        //Debug.DrawRay(frontAxle.position, Quaternion.Euler(0, transform.rotation.eulerAngles.y, 0) * (forceLat - lateralForceRear)/ M * 5, Color.yellow);
+        //Debug.DrawRay(rearAxle.position, Quaternion.Euler(0, transform.rotation.eulerAngles.y, 0) * lateralForceRear / M * 5, Color.yellow);
     }
 
 
