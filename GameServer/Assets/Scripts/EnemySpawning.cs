@@ -2,6 +2,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
+/// <summary> Responsible for enemy spawning</summary>
 public class EnemySpawning : MonoBehaviour
 {
     private static EnemySpawning _singleton;
@@ -34,8 +35,6 @@ public class EnemySpawning : MonoBehaviour
         {
             if (enemiesCount <= maxEnemies && shouldSpawn)
                 Enemy.Spawn(new Vector3(Random.Range(-10,10), 0 , Random.Range(-10, 10)));
-
-            Debug.Log("Spawning enemy");
 
             enemiesCount++;
             yield return new WaitForSeconds(secondsForRespawning);

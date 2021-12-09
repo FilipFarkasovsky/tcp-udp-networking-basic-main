@@ -145,6 +145,5 @@ public class SimpleDS : MonoBehaviour
 
 
         NetworkManager.Singleton.Server.Send(message, ID);
-
     }
 }

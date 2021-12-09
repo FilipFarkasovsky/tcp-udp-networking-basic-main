@@ -1,6 +1,7 @@
 ﻿using UnityEngine;
 using UnityEngine.Animations.Rigging;
 
+/// <summary> Controls animation of the player</summary>
 public class PlayerAnimation : MonoBehaviour
 {
     public Animator animator;
@@ -9,10 +10,20 @@ public class PlayerAnimation : MonoBehaviour
     public bool isFiring;
     private Weapon weapon;
     public Transform weaponParent;
-    
+
+    int LateralSpeed;
+    int ForwardSpeed;
+    int Grounded;
+    int Jumping;
+
     private void Start(){
         Weapon existingWeapon = GetComponentInChildren<Weapon>();
         EquipWeapon(existingWeapon);
+
+        LateralSpeed = Animator.StringToHash("LateralSpeed");
+        ForwardSpeed = Animator.StringToHash("ForwardSpeed");
+        Grounded = Animator.StringToHash("Grounded");
+        Jumping = Animator.StringToHash("Jumping");
     }
 
     private void LateUpdate(){
@@ -26,10 +37,10 @@ public class PlayerAnimation : MonoBehaviour
     }
 
     public void UpdateAnimatorProperties(float lateralSpeed, float forwardSpeed, bool grounded, bool jumping){
-        animator.SetFloat("LateralSpeed", lateralSpeed);
-        animator.SetFloat("ForwardSpeed", forwardSpeed);
-        animator.SetBool("Grounded", grounded);
-        animator.SetBool("Jumping", jumping);
+        animator.SetFloat(LateralSpeed, lateralSpeed);
+        animator.SetFloat(ForwardSpeed, forwardSpeed);
+        animator.SetBool(Grounded, grounded);
+        animator.SetBool(Jumping, jumping);
     }
     public void IsFiring(bool _isFiring){
         isFiring = _isFiring;

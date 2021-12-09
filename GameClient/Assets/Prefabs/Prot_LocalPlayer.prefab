@@ -40,6 +40,7 @@ GameObject:
   m_Component:
   - component: {fileID: 1524047691326610301}
   - component: {fileID: 3065450303962929553}
+  - component: {fileID: 4431049985373720381}
   - component: {fileID: 3902867291292079139}
   - component: {fileID: 983334931536477041}
   - component: {fileID: 6479015592572673897}
@@ -81,17 +82,31 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   playerManager: {fileID: -4224624851614131593}
+  playerMovement: {fileID: 4431049985373720381}
   playerCamera: {fileID: 4634531960900213368}
   rb: {fileID: 983334931536477041}
+  velocity: {x: 0, y: 0, z: 0}
+  ClientTick: 0
+  ClientLastAckedTick: 0
+  simpleDS: {fileID: 8991921563913084643}
+--- !u!114 &4431049985373720381
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4372309730251437740}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 7ed281f10df4c2d4d9293ea6a6cb0f79, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
   groundCheck: {fileID: 1168544426532768733}
   whatIsGround:
     serializedVersion: 2
     m_Bits: 64
   checkRadius: 0.485
   velocity: {x: 0, y: 0, z: 0}
-  ClientTick: 0
-  ClientLastAckedTick: 0
-  simpleDS: {fileID: 8991921563913084643}
 --- !u!136 &3902867291292079139
 CapsuleCollider:
   m_ObjectHideFlags: 0
@@ -544,9 +559,9 @@ MonoBehaviour:
   implementation: 0
   target: 0
   tomWeilandInterpolation: {fileID: 1516380208195697810}
+  snapshotStDev: {fileID: 0}
   timeElapsed: 0
   timeToReachTarget: 0.03125
-  isLocalPlayer: 1
   Sync: 0
   Delay: 0
   WaitForLerp: 0

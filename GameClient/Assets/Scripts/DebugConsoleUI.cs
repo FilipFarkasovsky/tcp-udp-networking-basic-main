@@ -13,6 +13,7 @@ public class DebugConsoleUI
         }
     }
     public static List<Info> messages = new List<Info>();
+
     public static void Log<T>(T log)
     {
         messages.Add(new Info(log.ToString(), 0));

@@ -2,6 +2,44 @@ using UnityEngine;
 using System.Collections.Generic;
 using RiptideNetworking;
 
+public class ClientInputState
+{
+    public int tick;
+    public float lerpAmount;
+    public int simulationFrame;
+
+    public int buttons;
+
+    public float HorizontalAxis;
+    public float VerticalAxis;
+    public Quaternion rotation;
+}
+
+public class Button
+{
+    public static int Jump = 1 << 0;
+    public static int Fire1 = 1 << 2;
+}
+
+public class SimulationState
+{
+    public Vector3 position;
+    public Vector3 velocity;
+    public int simulationFrame;
+    public static SimulationState CurrentSimulationState(ClientInputState inputState, PlayerInput player)
+    {
+        return new SimulationState
+        {
+            position = player.transform.position,
+            velocity = player.velocity,
+            simulationFrame = inputState.simulationFrame,
+        };
+    }
+}
+
+/// <summary>
+/// Processes input, sends input, reconciliates, makes client prediction, controls interpolation of local player
+/// </summary>
 public class PlayerInput : MonoBehaviour
 {
     #region Structs
@@ -28,6 +66,7 @@ public class PlayerInput : MonoBehaviour
         public static implicit operator Inputs(ushort value) => new Inputs(value);
     }
 
+    #region newSystem
     struct InputCmd
     {
         public float DeliveryTime;
@@ -51,28 +90,19 @@ public class PlayerInput : MonoBehaviour
         public Vector3 Velocity;
         public Vector3 AngularVelocity;
     }
-
     #endregion
 
-    static Convar moveSpeed = new Convar("sv_movespeed", 6.35f, "Movement speed for the player", Flags.NETWORK);
-    static Convar runAcceleration = new Convar("sv_accelerate", 14f, "Acceleration for the player when moving", Flags.NETWORK);
-    static Convar airAcceleration = new Convar("sv_airaccelerate", 12f, "Air acceleration for the player", Flags.NETWORK);
-    static Convar jumpForce = new Convar("sv_jumpforce", 1f, "Jump force for the player", Flags.NETWORK);
-    static Convar friction = new Convar("sv_friction", 5.5f, "Player friction", Flags.NETWORK);
+    #endregion
 
     static ConvarRef interp = new ConvarRef("interpolation");
 
     public Player playerManager;
+    public PlayerMovement playerMovement;
     public Camera playerCamera;
     public Rigidbody rb;
 
-    public GameObject groundCheck;
-    public LayerMask whatIsGround;
-    public float checkRadius;
-
     [HideInInspector]
     public Vector3 velocity = Vector3.zero;
-    private bool isGrounded;
 
     // The maximum cache size for both the ClientInputState and SimulationState caches.
     private const int STATE_CACHE_SIZE = 1024;
@@ -104,7 +134,6 @@ public class PlayerInput : MonoBehaviour
     Queue<Snapshot> ReceivedClientSnapshots;
     SimulationStep[] SimulationSteps;
     InputCmd inputCmd;
-    public SimpleDS simpleDS;
     bool vsyncToggle;
 
 
@@ -130,8 +159,10 @@ public class PlayerInput : MonoBehaviour
         //logicTimer = new LogicTimer(() => FixedTime());
         //logicTimer.Start();
 
-        //Assign local
+        //Assign id of local player
         Player.myId = playerManager.id;
+
+        playerMovement.SetTransformAndRigidbody(transform, rb);
     }
 
     private void FixedUpdate()
@@ -250,11 +281,12 @@ public class PlayerInput : MonoBehaviour
         //++ClientTick;
     }
 
+    // Redundant packages
     public void SendInputCommand()
     {
         Message message = Message.Create(MessageSendMode.unreliable, (ushort)ClientToServerId.inputCommand);
 
-        message.Add(ClientLastAckedTick);
+        message.Add(lastCorrectedFrame);
         inputCmd.Inputs = new List<Inputs>();
 
         for (int tick = ClientLastAckedTick; tick <= ClientTick; ++tick)
@@ -269,9 +301,6 @@ public class PlayerInput : MonoBehaviour
         }
 
         NetworkManager.Singleton.Client.Send(message);
-
-        DebugScreen.packetsUp++;
-        DebugScreen.bytesUp += message.WrittenLength;
     }
 
     void MoveLocalEntity(Rigidbody rb, Inputs input)
@@ -296,172 +325,19 @@ public class PlayerInput : MonoBehaviour
     }
     #endregion
 
-    #region Old System
-    private void ProcessInput(ClientInputState inputs)
+    public void ProcessInput(ClientInputState inputs)
     {
-
-
-        RotationCheck(inputs);
+        playerMovement.RotationCheck(inputs);
 
         rb.isKinematic = false;
         rb.velocity = velocity;
 
-        CalculateVelocity(inputs);
+        playerMovement.CalculateVelocity(inputs);
         Physics.Simulate(LogicTimer.FixedDelta);
-
-        //playerManager.interpolation.PreviousPosition = rb.position;
 
         velocity = rb.velocity;
         rb.isKinematic = true;
     }
-
-    // Normalizes rotation
-    private void RotationCheck(ClientInputState inputs)
-    {
-        inputs.rotation.Normalize();
-    }
-
-    // Calculates player velocity with the given inputs
-    private void CalculateVelocity(ClientInputState inputs)
-    {
-        GroundCheck();
-
-        if (isGrounded)
-            WalkMove(inputs);
-        else
-            AirMove(inputs);
-    }
-    #endregion
-
-    #region Movement
-    void GroundCheck()
-    {
-        // Are we touching something?
-        isGrounded = Physics.CheckSphere(groundCheck.transform.position, checkRadius, whatIsGround);
-
-        // We are touching the ground check if it is a slope
-        if (isGrounded &&
-            Physics.SphereCast(transform.position, checkRadius, Vector3.down, out RaycastHit hit, 100f, whatIsGround))
-        {
-            isGrounded = Vector3.Angle(Vector3.up, hit.normal) <= 45f;
-        }
-    }
-
-    void AirMove(ClientInputState inputs)
-    {
-        Vector2 input = new Vector2(inputs.HorizontalAxis, inputs.VerticalAxis).normalized;
-
-        Vector3 forward = (inputs.rotation * Vector3.forward);
-        Vector3 right = (inputs.rotation * Vector3.right);
-
-        forward.y = 0;
-        right.y = 0;
-
-        forward.Normalize();
-        right.Normalize();
-
-        Vector3 wishdir = right * input.x + forward * input.y;
-
-        float wishspeed = wishdir.magnitude;
-
-        AirAccelerate(wishdir, wishspeed, airAcceleration.GetValue());
-    }
-
-    void WalkMove(ClientInputState inputs)
-    {
-        if ((inputs.buttons & Button.Jump) == Button.Jump)
-        {
-            Friction(0f);
-            rb.velocity += new Vector3(0f, jumpForce.GetValue(), 0f);
-            AirMove(inputs);
-            return;
-        }
-        else
-            Friction(1f);
-
-        Vector2 input = new Vector2(inputs.HorizontalAxis, inputs.VerticalAxis).normalized;
-
-        var forward = (inputs.rotation * Vector3.forward);
-        var right = (inputs.rotation * Vector3.right);
-
-        forward.y = 0;
-        right.y = 0;
-
-        forward.Normalize();
-        right.Normalize();
-
-        Vector3 wishdir = right * input.x + forward * input.y;
-
-        float wishspeed = wishdir.magnitude;
-        wishspeed *= moveSpeed.GetValue();
-
-        Accelerate(wishdir, wishspeed, runAcceleration.GetValue());
-
-        if ((inputs.buttons & Button.Jump) == Button.Jump)
-        {
-            rb.velocity += new Vector3(0f, jumpForce.GetValue(), 0f);
-        }
-    }
-
-    private void Accelerate(Vector3 wishdir, float wishspeed, float accel)
-    {
-        float addspeed;
-        float accelspeed;
-        float currentspeed;
-
-        currentspeed = Vector3.Dot(rb.velocity, wishdir);
-        addspeed = wishspeed - currentspeed;
-        if (addspeed <= 0)
-            return;
-        accelspeed = accel * LogicTimer.FixedDelta * wishspeed;
-        if (accelspeed > addspeed)
-            accelspeed = addspeed;
-
-        rb.velocity += new Vector3(accelspeed * wishdir.x, 0f, accelspeed * wishdir.z);
-    }
-
-    void AirAccelerate(Vector3 wishdir, float wishspeed, float accel)
-    {
-        float addspeed, accelspeed, currentspeed;
-
-        currentspeed = Vector3.Dot(rb.velocity, wishdir);
-        addspeed = wishspeed - currentspeed;
-        if (addspeed <= 0)
-            return;
-
-        accelspeed = accel * wishspeed * LogicTimer.FixedDelta;
-
-        if (accelspeed > addspeed)
-            accelspeed = addspeed;
-
-        rb.velocity += new Vector3(accelspeed * wishdir.x, 0f, accelspeed * wishdir.z);
-    }
-
-    void Friction(float t)
-    {
-        float speed = rb.velocity.magnitude, newspeed, control, drop;
-
-        if (speed < 0.1f)
-            return;
-
-        drop = 0;
-
-        if (isGrounded)
-        {
-            control = speed < runAcceleration.GetValue() ? runAcceleration.GetValue() : speed;
-            drop += control * friction.GetValue() * LogicTimer.FixedDelta * t;
-        }
-
-        newspeed = speed - drop;
-        if (newspeed < 0)
-            newspeed = 0;
-
-        newspeed /= speed;
-
-        rb.velocity = new Vector3(rb.velocity.x * newspeed, rb.velocity.y, rb.velocity.z * newspeed);
-    }
-    #endregion
-
     private void SendInputToServer()
     {
         SendMessages.PlayerInput(inputState);

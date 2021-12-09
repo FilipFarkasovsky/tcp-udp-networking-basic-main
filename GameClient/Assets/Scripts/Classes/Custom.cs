@@ -2,6 +2,7 @@ using UnityEngine;
 using System.Collections.Generic;
 using UnityEngine.SceneManagement;
 
+//Delta snapshot
 public class Custom : MonoBehaviour
 {
 

@@ -1,5 +1,6 @@
 using UnityEngine;
 
+/// <summary Handles rotation of local players camera</summary>
 public class CameraLook : MonoBehaviour
 {
     static Convar rotationBounds = new Convar("sv_maxrotation", 89f, "Maximum rotation around the x axis", Flags.NETWORK);
@@ -9,8 +10,8 @@ public class CameraLook : MonoBehaviour
 
     private ConsoleUI consoleUI;
 
-    private float rotationX;
-    private float rotationY;
+    private float rotationX; //yaw rotation in degrees
+    private float rotationY;  //pitch rotation in degrees
 
     private void Start()
     {
@@ -38,12 +39,8 @@ public class CameraLook : MonoBehaviour
             Cursor.lockState = CursorLockMode.None;
         }
 
-
-        float _mouseVertical = -Input.GetAxis("Mouse Y");
-        float _mouseHorizontal = Input.GetAxis("Mouse X");
-
-        rotationY += _mouseVertical * rotationSensitivity.GetValue();
-        rotationX += _mouseHorizontal * rotationSensitivity.GetValue();
+        rotationY += -Input.GetAxis("Mouse Y") * rotationSensitivity.GetValue();
+        rotationX += Input.GetAxis("Mouse X") * rotationSensitivity.GetValue();
 
         rotationY = Mathf.Clamp(rotationY, -rotationBounds.GetValue(), rotationBounds.GetValue());
 

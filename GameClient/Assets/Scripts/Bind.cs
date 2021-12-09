@@ -9,6 +9,9 @@ public class Binds
     static public List<Bind> list = new List<Bind>();
 }
 
+/// <summary>
+/// Binds key and commands of the console
+/// </summary>
 public class Bind
 {
     private static int counter = 0;

@@ -7,6 +7,9 @@ using UnityEngine;
 using UnityEngine.UI;
 using TMPro;
 
+/// <summary>
+/// Controls UI site of the console
+/// </summary>
 public class ConsoleUI : MonoBehaviour
 {
     public ScrollRect scrollLog;

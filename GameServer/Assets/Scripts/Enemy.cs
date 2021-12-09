@@ -5,9 +5,22 @@ using UnityEngine;
 using UnityEngine.AI;
 using RiptideNetworking;
 
-public class Enemy : MonoBehaviour
+public class Enemy : NetworkedEntity<Enemy>
 {
-    public static Dictionary<ushort, Enemy> List { get; private set; } = new Dictionary<ushort, Enemy>();
+    public override byte GetNetworkedObjectType { get; set; } = (byte)NetworkedObjectType.enemy;
+    public override ushort Id { get => id; }
+
+    public static void Spawn(Vector3 position)
+    {
+        Enemy enemy = Instantiate(EnemySpawning.Singleton.EnemyPrefab, position, Quaternion.identity).GetComponent<Enemy>();
+        enemy.name = $"Enemy {lastId}";
+        enemy.id = lastId;
+        List.Add(lastId, enemy);
+        lastId++;
+
+        enemy.SendSpawn();
+    }
+
     public int health = 100;
     public ushort id;
     private static ushort lastId = 0;
@@ -29,39 +42,6 @@ public class Enemy : MonoBehaviour
     //States
     public float sightRange, attackRange;
     public bool playerInSightRange, playerInAttackRange;
-
-
-    public static void Spawn(Vector3 position)
-    {
-        Enemy enemy = Instantiate(EnemySpawning.Singleton.EnemyPrefab, position, Quaternion.identity).GetComponent<Enemy>();
-        enemy.name = $"Enemy {lastId}";
-        enemy.id = lastId;
-        List.Add(lastId, enemy);
-        lastId++;
-
-        enemy.SendSpawn();
-    }
-
-    private void SendSpawn()
-    {
-        Message message = Message.Create(MessageSendMode.reliable, (ushort)ServerToClientId.spawnEnemy);
-        message.Add(id);
-        message.Add(transform.position);
-        NetworkManager.Singleton.Server.SendToAll(message);
-    }
-
-    public void SendSpawn(ushort toClient)
-    {
-        Message message = Message.Create(MessageSendMode.reliable, (ushort)ServerToClientId.spawnEnemy);
-        message.Add(id);
-        message.Add(transform.position);
-        NetworkManager.Singleton.Server.Send(message, toClient);
-    }
-
-    private void OnDestroy()
-    {
-        List.Remove(id);
-    }
 
     private void Awake()
     {

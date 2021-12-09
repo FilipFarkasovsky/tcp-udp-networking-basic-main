@@ -9,6 +9,10 @@ public class Commands
 {
     static public List<Command> list = new List<Command>();
 }
+
+/// <summary>
+/// Represents commands of the console
+/// </summary>
 public class Command
 {
     private static int counter = 0;

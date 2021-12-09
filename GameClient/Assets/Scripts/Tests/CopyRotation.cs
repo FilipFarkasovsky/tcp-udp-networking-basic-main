@@ -2,6 +2,9 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
+/// <summary>
+/// Copys yaw rotation
+/// </summary>
 public class CopyRotation : MonoBehaviour
 {
     public Transform playerCamera;

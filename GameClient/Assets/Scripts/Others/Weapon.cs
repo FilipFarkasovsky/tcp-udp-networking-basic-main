@@ -2,6 +2,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
+/// <summary> Controls visual effects of the weapon </summary>
 public class Weapon : MonoBehaviour
 {
     [Header("Raycast settings")]
@@ -13,6 +14,7 @@ public class Weapon : MonoBehaviour
     public ParticleSystem hitEffect;
     public TrailRenderer tracerEffect;
     public ushort fireRate = 20;
+
     [Header("Sound references")]
     public AudioClip gunFire;
 

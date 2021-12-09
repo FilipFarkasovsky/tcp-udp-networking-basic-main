@@ -1,5 +1,25 @@
-using System;
+﻿using System;
 using System.Diagnostics;
+using UnityEngine;
+
+public class Utils
+{
+    public static float TickInterval()
+    {
+        return ticksToTime(1);
+    }
+
+    public static int timeToTicks(float _time)
+    {
+        return Mathf.FloorToInt(_time / (1f / NetworkManager.Singleton.tickrate.GetValue()));
+    }
+
+    public static float ticksToTime(int _ticks)
+    {
+        return (float)_ticks * (1f / NetworkManager.Singleton.tickrate.GetValue());
+    }
+
+}
 
 public class LogicTimer
 {

@@ -5,25 +5,23 @@ using UnityEngine;
 
 public enum ServerToClientId : ushort
 {
-    spawnPlayer = 1,
-    spawnEnemy,
-    setPosition,
-    setRotation,
+    spawnObject = 1,
     setTransform,
     playerAnimation,
     serverSimulationState,
     serverConvar,
     serverTick,
-    clientSnapshot,
+    clientSnapshot = 101,
 }
 public enum ClientToServerId : ushort
 {
     playerName = 1,
     playerInput,
     playerConvar,
-    inputCommand,
+    inputCommand = 101,
 }
 
+/// <summary> Main core of the networking - conection handling, tick counting, spawning, disconnecting</summary>
 public class NetworkManager : MonoBehaviour
 {
     private static NetworkManager _singleton;
@@ -74,6 +72,12 @@ public class NetworkManager : MonoBehaviour
         Client.ConnectionFailed += FailedToConnect;
         Client.ClientDisconnected += PlayerLeft;
         Client.Disconnected += DidDisconnect;
+    }
+
+    private void Update()
+    {
+        // Call this function in update - updates lerpAmount and clientTick
+        LerpManager.Update();
     }
 
     private void FixedUpdate()

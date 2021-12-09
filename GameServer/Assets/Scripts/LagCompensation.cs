@@ -2,7 +2,29 @@
 using System.Linq;
 using UnityEngine;
 
-public class LagCompensation
+public class PlayerRecord
+{
+    public Vector3 position;
+    public Quaternion rotation;
+    public int playerTick;
+
+    public PlayerRecord()
+    {
+        position = new Vector3();
+        rotation = new Quaternion();
+        playerTick = new int();
+    }
+
+    public PlayerRecord(Vector3 _position, Quaternion _rotation, int _playerTick)
+    {
+        position = _position;
+        rotation = _rotation;
+        playerTick = _playerTick;
+    }
+}
+
+/// <summary> Responsible for backtracking entities, recording their position </summary>
+public class LagCompensation 
 {
     public static List<PlayerRecord>[] playerRecords = new List<PlayerRecord>[NetworkManager.Singleton.maxClientCount + 1];
 

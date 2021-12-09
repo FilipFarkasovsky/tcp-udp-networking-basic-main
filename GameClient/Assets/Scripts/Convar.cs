@@ -6,6 +6,7 @@ public class Convars
 {
     static public List<Convar> list = new List<Convar>();
 }
+
 public class ConvarRef
 {
     public int index;
@@ -29,6 +30,9 @@ public class ConvarRef
     }
 }
 
+/// <summary>
+/// Represents console variables
+/// </summary>
 public class Convar
 {
     private static int counter = 0;

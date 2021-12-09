@@ -1,6 +1,52 @@
 using System.Collections.Generic;
 using UnityEngine;
 
+class TransformUpdate
+{
+    public static TransformUpdate zero = new TransformUpdate(0, 0, 0, Vector3.zero, Vector3.zero, Quaternion.identity, Quaternion.identity);
+
+    public int tick;
+
+    public float time;
+    public float lastTime;
+    public Vector3 position;
+    public Vector3 lastPosition;
+    public Quaternion rotation;
+    public Quaternion lastRotation;
+
+    internal TransformUpdate(int _tick, float _time, float _lastTime, Vector3 _position, Vector3 _lastPosition)
+    {
+        tick = _tick;
+        time = _time;
+        lastTime = _lastTime;
+        position = _position;
+        rotation = Quaternion.identity;
+        lastPosition = _lastPosition;
+    }
+
+    internal TransformUpdate(int _tick, float _time, float _lastTime, Quaternion _rotation, Quaternion _lastRotation)
+    {
+        tick = _tick;
+        time = _time;
+        lastTime = _lastTime;
+        position = Vector3.zero;
+        rotation = _rotation;
+        lastRotation = _lastRotation;
+    }
+
+    internal TransformUpdate(int _tick, float _time, float _lastTime, Vector3 _position, Vector3 _lastPosition, Quaternion _rotation, Quaternion _lastRotation)
+    {
+        tick = _tick;
+        time = _time;
+        lastTime = _lastTime;
+        position = _position;
+        rotation = _rotation;
+        lastPosition = _lastPosition;
+        lastRotation = _lastRotation;
+    }
+}
+
+/// <summary> Controls interpolation of networked objects</summary>
 public class Interpolation : MonoBehaviour
 {
     [SerializeField] public InterpolationMode mode;
@@ -28,7 +74,6 @@ public class Interpolation : MonoBehaviour
     [SerializeField] private float timeToReachTarget = 0.1f;
 
 
-    public bool isLocalPlayer = false;
     public bool Sync = false;
     public bool Delay = false;
     public bool WaitForLerp = false;
@@ -51,7 +96,7 @@ public class Interpolation : MonoBehaviour
 
     private void Start()
     {
-        if (isLocalPlayer)
+        if (target == InterpolationTarget.localPlayer)
         {
             Sync = false;
             Delay = false;
@@ -59,7 +104,7 @@ public class Interpolation : MonoBehaviour
         }
 
         // The localPlayer uses a different tick
-        int currentTick = isLocalPlayer ? 0 : GlobalVariables.clientTick - Utils.timeToTicks(interpolation.GetValue());
+        int currentTick = target == InterpolationTarget.localPlayer ? 0 : GlobalVariables.clientTick - Utils.timeToTicks(interpolation.GetValue());
         if (currentTick < 0)
             currentTick = 0;
 

@@ -4,10 +4,7 @@ using UnityEngine;
 
 public enum ServerToClientId : ushort
 {
-    spawnPlayer = 1,
-    spawnEnemy,
-    setPosition,
-    setRotation,
+    spawn = 1,
     setTransform,
     playerAnimation,
     serverSimulationState,
@@ -15,6 +12,7 @@ public enum ServerToClientId : ushort
     serverTick,
     clientSnapshot,
 }
+
 public enum ClientToServerId : ushort
 {
     playerName = 1,
@@ -23,6 +21,7 @@ public enum ClientToServerId : ushort
     inputCommand,
 }
 
+/// <summary> Main core of the networking - conection handling, tick counting, spawning, disconnecting</summary>
 public class NetworkManager : MonoBehaviour
 {
     private static NetworkManager _singleton;
@@ -113,6 +112,8 @@ public class NetworkManager : MonoBehaviour
     private void NewPlayerConnected(object sender, ServerClientConnectedEventArgs e)
     {
         Debug.Log("Connected");
+
+        // New player conected, we need to send him position of all networked objects
         foreach (Player player in Player.List.Values)
         {
             if (player.id != e.Client.Id)

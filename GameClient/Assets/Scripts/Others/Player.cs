@@ -2,17 +2,17 @@
 using RiptideNetworking;
 using System.Collections.Generic;
 
-public class Player : MonoBehaviour
+/// <summary> Stores list of players, controls their interpolation and animation </summary>
+public class Player : NetworkedEntity<Player>
 {
+    public override byte GetNetworkedObjectType { get; set; } = (byte)NetworkedObjectType.enemy;
+    public override ushort Id { get => id; }
+
     public static ushort myId = 0;
-    public static Dictionary<ushort, Player> list = new Dictionary<ushort, Player>();
 
     public ushort id;
     public string username;
 
-    public Interpolation interpolation;
-
-    public Interpolation cameraInterpolation;
     public PlayerAnimation playerAnimation;
 
     public static void Spawn(ushort id, string username, Vector3 position)
