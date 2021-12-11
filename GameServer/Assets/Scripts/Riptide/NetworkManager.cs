@@ -10,7 +10,7 @@ public enum ServerToClientId : ushort
     serverSimulationState,
     serverConvar,
     serverTick,
-    clientSnapshot,
+    clientSnapshot = 101,
 }
 
 public enum ClientToServerId : ushort
@@ -18,7 +18,8 @@ public enum ClientToServerId : ushort
     playerName = 1,
     playerInput,
     playerConvar,
-    inputCommand,
+    inputCommand = 101,
+    carTransfortmToServer = 200,
 }
 
 /// <summary> Main core of the networking - conection handling, tick counting, spawning, disconnecting</summary>
@@ -77,7 +78,7 @@ public class NetworkManager : MonoBehaviour
 
         LagCompensation.Start(maxClientCount);
         Server.Start(port, maxClientCount);
-        StartCoroutine(EnemySpawning.Singleton.StartSpawning());
+        //StartCoroutine(EnemySpawning.Singleton.StartSpawning());
     }
 
     private void FixedUpdate()
@@ -97,7 +98,7 @@ public class NetworkManager : MonoBehaviour
             if(Player.List.TryGetValue(i, out Player player))
                 player.tick = tick;
         }
-        SendMessages.ServerTick();
+        // SendMessages.ServerTick();
     }
 
     private void OnApplicationQuit()

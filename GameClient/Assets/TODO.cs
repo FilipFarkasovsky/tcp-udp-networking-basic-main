@@ -15,8 +15,12 @@ public class TODO : MonoBehaviour
     14) prepísať snapshotdev do interpolation, ak bude na to čas
     15) ako sa bude posielať input - máme na výber viacero tried
     ** If Update() is called less often than FixedUpdate() dont interpolate
+    *** input buttons zemniť int na ushort alebo byte
 
-            REDUNDANT PACKAGES
+            MENU
+    * Puppet dancing
+    * Car in background
+    * Cool UI
 
     */
 }

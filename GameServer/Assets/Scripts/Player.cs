@@ -4,7 +4,7 @@ using RiptideNetworking;
 
 public class ClientInputState
 {
-    public int tick;
+    public int tick; // Tick used for backtracking in LagCompensation - (ClientTick - interp.Getvalue)                    
     public float lerpAmount;
     public int simulationFrame;
 
@@ -25,14 +25,18 @@ public class SimulationState
 {
     public Vector3 position;
     public Vector3 velocity;
+    public Quaternion rotation;
+    public Vector3 angularVelocity;
     public int simulationFrame;
     public static SimulationState CurrentSimulationState(ClientInputState inputState, Player player)
     {
         return new SimulationState
         {
+            simulationFrame = inputState.simulationFrame,
             position = player.transform.position,
             velocity = player.velocity,
-            simulationFrame = inputState.simulationFrame,
+            rotation = player.transform.rotation,
+            angularVelocity = player.angularVelocity,
         };
     }
 }
@@ -67,6 +71,7 @@ public class Player : NetworkedEntity<Player>
 
     [HideInInspector]
     public Vector3 velocity = Vector3.zero;
+    public Vector3 angularVelocity = Vector3.zero;
 
     private int lastFrame;
     private Queue<ClientInputState> clientInputs = new Queue<ClientInputState>();
@@ -129,8 +134,13 @@ public class Player : NetworkedEntity<Player>
 
     //-----------
     public static void Spawn(ushort id, string username)
-    { 
-        Player player = Instantiate(NetworkManager.Singleton.PlayerPrefab, new Vector3(0f, 1f, 0f), Quaternion.identity).GetComponent<Player>();
+    {
+        // If player with given id exists dont instantiate him 
+        // This can sometimes happen, but i have not found out why or when
+        if (Player.List.ContainsKey(id))
+            return;
+
+        Player player = Instantiate(NetworkManager.Singleton.PlayerPrefab, new Vector3(0f, 0f, 0f), Quaternion.identity).GetComponent<Player>();
         player.name = $"Player {id} ({(username == "" ? "Guest" : username)})";
         player.id = id;
         player.username = username;
@@ -181,43 +191,11 @@ public class Player : NetworkedEntity<Player>
 
     void FixedUpdate()
     {
-        ProcessInputs();
+        //ProcessInputs();
         SendMessages.SetTransform(this);
-        SendMessages.PlayerAnimation(this);
+        //SendMessages.PlayerAnimation(this);
     }
 
-    #region New System
-    private void SecondProcessInput(ClientInputState inputs)
-    {
-        //RotationCheck(inputs);
-
-        rb.isKinematic = false;
-
-        Vector3 direction = default;
-
-        if (inputs.VerticalAxis == 1) { direction += transform.forward; }
-        else if (inputs.VerticalAxis == -1) { direction -= transform.forward; }
-        if (inputs.HorizontalAxis == 1) { direction += transform.right; }
-        else if (inputs.HorizontalAxis == -1) { direction -= transform.right; }
-
-        rb.velocity = direction.normalized * 3f;
-        Physics.Simulate(Time.fixedDeltaTime);
-    }
-
-    void MoveLocalEntity(Rigidbody rb, Inputs input)
-    {
-        Vector3 direction = default;
-
-        if (input.IsDown(BTN_FORWARD)) direction += transform.forward;
-        if (input.IsDown(BTN_BACKWARD)) direction -= transform.forward;
-        if (input.IsDown(BTN_LEFTWARD)) direction -= transform.right;
-        if (input.IsDown(BTN_RIGHTWARD)) direction += transform.right;
-
-        rb.velocity = direction.normalized * 3f;
-    }
-    #endregion
-
-    #region Old System
     public void ProcessInputs()
     {
         // Declare the ClientInputState that we're going to be using.
@@ -226,6 +204,7 @@ public class Player : NetworkedEntity<Player>
         // Obtain CharacterInputState's from the queue. 
         while (clientInputs.Count > 0  && (inputState = clientInputs.Dequeue()) != null)
         {
+
             // Player is sending simulation frames that are in the past, dont process them
             if (inputState.simulationFrame <= lastFrame)
                 continue;
@@ -262,17 +241,25 @@ public class Player : NetworkedEntity<Player>
 
         rb.isKinematic = false;
         rb.velocity = velocity;
+        rb.angularVelocity = angularVelocity;
 
         playerMovement.CalculateVelocity(inputs);
         Physics.Simulate(LogicTimer.FixedDelta);
 
+     
         velocity = rb.velocity;
+        angularVelocity = rb.angularVelocity;
         rb.isKinematic = true;
     }
-    #endregion
 
     public void AddInput(ClientInputState _inputState)
     {
         clientInputs.Enqueue(_inputState);
+    }
+
+    private void OnGUI()
+    {
+        GUI.Box(new Rect(5f, 5f, 180f, 25f), $"Lastframe {lastFrame} + {tick}");
+            GUI.Box(new Rect(5f, 35f, 180f, 25f), $"Lastframe {clientInputs.Count}");
     }
 }

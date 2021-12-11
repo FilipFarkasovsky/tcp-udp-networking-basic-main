@@ -67,9 +67,11 @@ public class HandleMessages : MonoBehaviour
 
         SimulationState simulationState = new SimulationState();
 
+        simulationState.simulationFrame = message.GetInt();
         simulationState.position = message.GetVector3();
         simulationState.velocity = message.GetVector3();
-        simulationState.simulationFrame = message.GetInt();
+        //simulationState.rotation = message.GetQuaternion();
+        //simulationState.angularVelocity = message.GetVector3();
 
         if (Player.list.TryGetValue(Player.myId, out Player player))
             player.gameObject.GetComponentInChildren<PlayerInput>().OnServerSimulationStateReceived(simulationState);

@@ -19,6 +19,7 @@ public enum ClientToServerId : ushort
     playerInput,
     playerConvar,
     inputCommand = 101,
+    carTransfortmToServer = 200,
 }
 
 /// <summary> Main core of the networking - conection handling, tick counting, spawning, disconnecting</summary>

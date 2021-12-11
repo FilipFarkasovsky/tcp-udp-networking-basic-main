@@ -139,8 +139,8 @@ public class SimpleDS : MonoBehaviour
 
         message.Add(ServerTick);
         message.Add(ServerRb.position);
-        message.Add(ServerRb.rotation);
         message.Add(ServerRb.velocity);
+        message.Add(ServerRb.rotation);
         message.Add(ServerRb.angularVelocity);
 
 

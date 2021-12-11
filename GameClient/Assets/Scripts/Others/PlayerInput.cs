@@ -23,16 +23,20 @@ public class Button
 
 public class SimulationState
 {
+    public int simulationFrame;
     public Vector3 position;
     public Vector3 velocity;
-    public int simulationFrame;
+    public Quaternion rotation;
+    public Vector3 angularVelocity;
     public static SimulationState CurrentSimulationState(ClientInputState inputState, PlayerInput player)
     {
         return new SimulationState
         {
+            simulationFrame = inputState.simulationFrame,
             position = player.transform.position,
             velocity = player.velocity,
-            simulationFrame = inputState.simulationFrame,
+            rotation = player.transform.rotation,
+            angularVelocity = player.angularVelocity,
         };
     }
 }
@@ -103,6 +107,7 @@ public class PlayerInput : MonoBehaviour
 
     [HideInInspector]
     public Vector3 velocity = Vector3.zero;
+    public Vector3 angularVelocity = Vector3.zero;
 
     // The maximum cache size for both the ClientInputState and SimulationState caches.
     private const int STATE_CACHE_SIZE = 1024;
@@ -128,13 +133,13 @@ public class PlayerInput : MonoBehaviour
     //          *******       NEW SYSTEM                                  ************
     // The maximum cache size for SimulationStep caches 
     // also it is count of the redundant inputs sent to server
-    private const int INPUT_CACHE_SIZE = 32;
-    [SerializeField] int ClientTick;
-    [SerializeField] int ClientLastAckedTick;
-    Queue<Snapshot> ReceivedClientSnapshots;
-    SimulationStep[] SimulationSteps;
-    InputCmd inputCmd;
-    bool vsyncToggle;
+    //private const int INPUT_CACHE_SIZE = 32;
+    //[SerializeField] int ClientTick;
+    //[SerializeField] int ClientLastAckedTick;
+    //Queue<Snapshot> ReceivedClientSnapshots;
+    //SimulationStep[] SimulationSteps;
+    //InputCmd inputCmd;
+    //bool vsyncToggle;
 
 
     private void Awake()
@@ -154,7 +159,7 @@ public class PlayerInput : MonoBehaviour
     void Start()
     {
         consoleUI = FindObjectOfType<ConsoleUI>();
-        SimulationSteps = new SimulationStep[INPUT_CACHE_SIZE];
+        //SimulationSteps = new SimulationStep[INPUT_CACHE_SIZE];
 
         //logicTimer = new LogicTimer(() => FixedTime());
         //logicTimer.Start();
@@ -171,8 +176,6 @@ public class PlayerInput : MonoBehaviour
         ProcessInput(inputState);
         //SecondProcessInput(inputState);
 
-        // Send inputs so the server can process them
-        SendInputToServer();
 
         // Reconciliate if there's a message from the server
         if (serverSimulationState != null) Reconciliate();
@@ -190,6 +193,9 @@ public class PlayerInput : MonoBehaviour
         // Store the ClientInputState into the inputStateCache
         inputStateCache[cacheIndex] = inputState;
 
+        // Send inputs so the server can process them
+        SendInputToServer();
+
         // Move next frame
         ++simulationFrame;
 
@@ -202,11 +208,11 @@ public class PlayerInput : MonoBehaviour
 
     private void Update()
     {
-        if (Input.GetKeyDown(KeyCode.V))
-        {
-            vsyncToggle = !vsyncToggle;
-            QualitySettings.vSyncCount = vsyncToggle ? 1 : 0;
-        }
+        //if (Input.GetKeyDown(KeyCode.V))
+        //{
+        //    vsyncToggle = !vsyncToggle;
+        //    QualitySettings.vSyncCount = vsyncToggle ? 1 : 0;
+        //}
 
         // Console is open, dont move
         if (consoleUI.isActive())
@@ -250,58 +256,64 @@ public class PlayerInput : MonoBehaviour
         //logicTimer.Update();
     }
 
+    private void OnGUI()
+    {
+        GUI.Box(new Rect(5f, 5f, 180f, 25f), $"Lastframe {lastCorrectedFrame} + {simulationFrame}");
+    }
+
     //    **************   NEW SYSTEM **************
     #region New System
-    private void SecondProcessInput(ClientInputState inputs)
-    {
-        //RotationCheck(inputs);
+    //private void SecondProcessInput(ClientInputState inputs)
+    //{
+    //    //RotationCheck(inputs);
 
-        rb.isKinematic = false;
+    //    rb.isKinematic = false;
 
-        //CalculateVelocity(inputs);
-        //Physics.Simulate(LogicTimer.FixedDelta);
+    //    //CalculateVelocity(inputs);
+    //    //Physics.Simulate(LogicTimer.FixedDelta);
 
-        int stateSlot = simulationFrame % INPUT_CACHE_SIZE;
+    //    int stateSlot = simulationFrame % INPUT_CACHE_SIZE;
 
-        ushort Buttons = 0;
+    //    ushort Buttons = 0;
 
-        if (Input.GetKey(KeyCode.W)) Buttons |= BTN_FORWARD;
-        if (Input.GetKey(KeyCode.S)) Buttons |= BTN_BACKWARD;
-        if (Input.GetKey(KeyCode.A)) Buttons |= BTN_LEFTWARD;
-        if (Input.GetKey(KeyCode.D)) Buttons |= BTN_RIGHTWARD;
+    //    if (Input.GetKey(KeyCode.W)) Buttons |= BTN_FORWARD;
+    //    if (Input.GetKey(KeyCode.S)) Buttons |= BTN_BACKWARD;
+    //    if (Input.GetKey(KeyCode.A)) Buttons |= BTN_LEFTWARD;
+    //    if (Input.GetKey(KeyCode.D)) Buttons |= BTN_RIGHTWARD;
 
-        SimulationSteps[stateSlot].Input = Buttons;
+    //    SimulationSteps[stateSlot].Input = Buttons;
 
-        SetStateAndRollback(ref SimulationSteps[stateSlot], rb);
+    //    SetStateAndRollback(ref SimulationSteps[stateSlot], rb);
 
-        playerManager.interpolation.PreviousPosition = SimulationSteps[stateSlot].Position;
+    //    playerManager.interpolation.PreviousPosition = SimulationSteps[stateSlot].Position;
 
-        //SendInputCommand();
+    //    //SendInputCommand();
 
-        //++ClientTick;
-    }
+    //    //++ClientTick;
+    //}
 
     // Redundant packages
-    public void SendInputCommand()
-    {
-        Message message = Message.Create(MessageSendMode.unreliable, (ushort)ClientToServerId.inputCommand);
+    //public void SendInputCommand()
+    //{
+    //    Message message = Message.Create(MessageSendMode.unreliable, (ushort)ClientToServerId.inputCommand);
 
-        message.Add(lastCorrectedFrame);
-        inputCmd.Inputs = new List<Inputs>();
+    //    message.Add(lastCorrectedFrame);
 
-        for (int tick = ClientLastAckedTick; tick <= ClientTick; ++tick)
-            inputCmd.Inputs.Add(SimulationSteps[tick % INPUT_CACHE_SIZE].Input);
+    //    inputCmd.Inputs = new List<Inputs>();
 
-        ushort countOfCommands = (ushort)inputCmd.Inputs.Count;
-        message.Add(countOfCommands);
+    //    for (int tick = ClientLastAckedTick; tick <= ClientTick; ++tick)
+    //        inputCmd.Inputs.Add(SimulationSteps[tick % INPUT_CACHE_SIZE].Input);
 
-        foreach (Inputs input in inputCmd.Inputs)
-        {
-            message.Add(input.buttons);
-        }
+    //    ushort countOfCommands = (ushort)inputCmd.Inputs.Count;
+    //    message.Add(countOfCommands);
 
-        NetworkManager.Singleton.Client.Send(message);
-    }
+    //    foreach (Inputs input in inputCmd.Inputs)
+    //    {
+    //        message.Add(input.buttons);
+    //    }
+
+    //    NetworkManager.Singleton.Client.Send(message);
+    //}
 
     void MoveLocalEntity(Rigidbody rb, Inputs input)
     {
@@ -331,16 +343,32 @@ public class PlayerInput : MonoBehaviour
 
         rb.isKinematic = false;
         rb.velocity = velocity;
+        //rb.angularVelocity = velocity;
 
         playerMovement.CalculateVelocity(inputs);
         Physics.Simulate(LogicTimer.FixedDelta);
 
+        //angularVelocity = rb.velocity;
         velocity = rb.velocity;
         rb.isKinematic = true;
     }
+
     private void SendInputToServer()
     {
         SendMessages.PlayerInput(inputState);
+        // We send all inputs that havent been acked
+        for (int frameToSend = lastCorrectedFrame + 1; frameToSend <= serverSimulationState.simulationFrame; frameToSend++)
+        {
+            // Determine the cache index 
+            int cacheIndex = frameToSend % STATE_CACHE_SIZE;
+
+            Debug.Log("Sending input");
+
+            // Obtain the cached input and simulation states.
+            ClientInputState cachedInputState = inputStateCache[cacheIndex];
+
+            if (cachedInputState != null) SendMessages.PlayerInput(cachedInputState);
+        }
     }
 
     private void OnApplicationQuit()
@@ -408,7 +436,7 @@ public class PlayerInput : MonoBehaviour
             return;
         }
 
-        // If the simulation time isnt equal to the serve time then return
+        // If the simulation time isnt equal to the server time then return
         // this should never happen
         if (cachedInputState.simulationFrame != serverSimulationState.simulationFrame || cachedSimulationState.simulationFrame != serverSimulationState.simulationFrame)
             return;

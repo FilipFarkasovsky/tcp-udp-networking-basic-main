@@ -51,9 +51,9 @@ public class SendMessages
     {
         Message message = Message.Create(MessageSendMode.unreliable, (ushort)ServerToClientId.serverSimulationState);
 
+            message.Add(_simulationState.simulationFrame);
             message.Add(_simulationState.position);
             message.Add(_simulationState.velocity);
-            message.Add(_simulationState.simulationFrame);
 
         NetworkManager.Singleton.Server.Send(message, _toClient);
     }

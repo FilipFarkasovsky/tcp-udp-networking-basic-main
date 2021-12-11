@@ -276,14 +276,14 @@ public class Custom : MonoBehaviour
         ClientPhysics.Simulate(Time.fixedDeltaTime);
     }
 
-    private void OnGUI()
-    {
-        GUI.Box(new Rect(5f, 05f, 180f, 25f), $"RTT SIMULATION {RTT * 1000f}");
-        GUI.Box(new Rect(5f, 35f, 180f, 25f), $"PACKET LOSS {PACKET_LOSS * 100f} %");
-        GUI.Box(new Rect(5f, 65f, 180f, 25f), $"STORED COMMANDS {inputCmd.Inputs?.Count}");
-        GUI.Box(new Rect(5f, 95f, 180f, 25f), $"LAST TICK {ClientLastAckedTick}");
-        GUI.Box(new Rect(5f, 125f, 180f, 25f), $"PREDICTED TICK {ClientTick}");
-        GUI.Box(new Rect(5f, 155f, 180f, 25f), $"SERVER TICK {ServerTick}");
-        GUI.Box(new Rect(5f, 185f, 180f, 25f), $"FPS {fps}");
-    }
+    //private void OnGUI()
+    //{
+    //    GUI.Box(new Rect(5f, 05f, 180f, 25f), $"RTT SIMULATION {RTT * 1000f}");
+    //    GUI.Box(new Rect(5f, 35f, 180f, 25f), $"PACKET LOSS {PACKET_LOSS * 100f} %");
+    //    GUI.Box(new Rect(5f, 65f, 180f, 25f), $"STORED COMMANDS {inputCmd.Inputs?.Count}");
+    //    GUI.Box(new Rect(5f, 95f, 180f, 25f), $"LAST TICK {ClientLastAckedTick}");
+    //    GUI.Box(new Rect(5f, 125f, 180f, 25f), $"PREDICTED TICK {ClientTick}");
+    //    GUI.Box(new Rect(5f, 155f, 180f, 25f), $"SERVER TICK {ServerTick}");
+    //    GUI.Box(new Rect(5f, 185f, 180f, 25f), $"FPS {fps}");
+    //}
 }

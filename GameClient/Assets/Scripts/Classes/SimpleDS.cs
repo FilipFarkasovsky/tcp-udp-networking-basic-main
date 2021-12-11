@@ -213,10 +213,10 @@ public class SimpleDS : MonoBehaviour
 
     private void OnGUI()
     {
-        GUI.Box(new Rect(5f, 5f, 180f, 25f), $"STORED COMMANDS {inputCmd.Inputs?.Count}");
-        GUI.Box(new Rect(5f, 35f, 180f, 25f), $"LAST TICK {ClientLastAckedTick}");
-        GUI.Box(new Rect(5f, 65f, 180f, 25f), $"PREDICTED TICK {ClientTick}");
-        GUI.Box(new Rect(5f, 95f, 180f, 25f), $"FPS {fps}");
+        //GUI.Box(new Rect(5f, 5f, 180f, 25f), $"STORED COMMANDS {inputCmd.Inputs?.Count}");
+        //GUI.Box(new Rect(5f, 35f, 180f, 25f), $"LAST TICK {ClientLastAckedTick}");
+        //GUI.Box(new Rect(5f, 65f, 180f, 25f), $"PREDICTED TICK {ClientTick}");
+        //GUI.Box(new Rect(5f, 95f, 180f, 25f), $"FPS {fps}");
     }
 
     public void SendInputCommand()

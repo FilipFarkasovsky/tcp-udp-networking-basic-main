@@ -37,10 +37,9 @@ public class HandleMessages
         string name = message.GetString();
         float requestedValue = message.GetFloat();
 
+        //Check if admin
         if (!Player.List.TryGetValue(_fromClient, out Player player))
             return;
-
-        //Check if admin
 
         foreach (Convar i in Convars.list)
         {
@@ -71,4 +70,15 @@ public class HandleMessages
         player.simpleDS.inputCmd.Inputs = list;
         player.simpleDS.ReceivedServerInputs.Enqueue(player.simpleDS.inputCmd);
     }
+
+    [MessageHandler((ushort)ClientToServerId.carTransfortmToServer)]
+    public static void CarTransform(ushort _fromClient, Message message)
+    {
+        if (!Player.List.TryGetValue(_fromClient, out Player player))
+            return;
+
+        player.transform.position = message.GetVector3();
+        player.transform.rotation = message.GetQuaternion();
+    }
+
 }
