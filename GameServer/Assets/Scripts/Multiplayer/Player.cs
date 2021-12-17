@@ -5,10 +5,10 @@ using RiptideNetworking;
 public class ClientInputState
 {
     public int tick; // Tick used for backtracking in LagCompensation - (ClientTick - interp.Getvalue)                    
-    public float lerpAmount;
+    public float lerpAmount; 
     public int simulationFrame;
 
-    public int buttons;
+    public ushort buttons;
 
     public float HorizontalAxis;
     public float VerticalAxis;
@@ -17,8 +17,8 @@ public class ClientInputState
 
 public class Button
 {
-    public static int Jump = 1 << 0;
-    public static int Fire1 = 1 << 2;
+    public static ushort Jump = 1 << 0;
+    public static ushort Fire1 = 1 << 2;
 };
 
 public class SimulationState
@@ -57,7 +57,6 @@ public class Player : NetworkedEntity<Player>
         return message;
     }
 
-    public SimpleDS simpleDS;
     public PlayerMovement playerMovement;
 
     static Convar moveSpeed = new Convar("sv_movespeed", 6.35f, "Movement speed for the player", Flags.NETWORK);
@@ -81,61 +80,6 @@ public class Player : NetworkedEntity<Player>
     public float forwardSpeed;
     public bool jumping;
 
-    public Vector3 carPosition;
-    public Quaternion carRotation;
-
-    // ---------------------- NEW SYSTEM ------------------------
-    #region Structs
-
-    #region INPUT SCHEMA
-
-    public const byte BTN_FORWARD = 1 << 1;
-    public const byte BTN_BACKWARD = 1 << 2;
-    public const byte BTN_LEFTWARD = 1 << 3;
-    public const byte BTN_RIGHTWARD = 1 << 4;
-
-    #endregion
-
-    public struct Inputs
-    {
-        public readonly ushort buttons;
-
-        public Inputs(ushort value) : this() => buttons = value;
-
-        public bool IsUp(ushort button) => IsDown(button) == false;
-
-        public bool IsDown(ushort button) => (buttons & button) == button;
-
-        public static implicit operator Inputs(ushort value) => new Inputs(value);
-    }
-
-    public struct InputCmd
-    {
-        public float DeliveryTime;
-        public int LastAckedTick;
-        public List<Inputs> Inputs;
-    }
-
-    struct SimulationStep
-    {
-        public Vector3 Position;
-        public Quaternion Rotation;
-        public Inputs Input;
-    }
-
-    struct Snapshot
-    {
-        public float DeliveryTime;
-        public int Tick;
-        public Vector3 Position;
-        public Quaternion Rotation;
-        public Vector3 Velocity;
-        public Vector3 AngularVelocity;
-    }
-
-    #endregion
-
-    //-----------
     public static void Spawn(ushort id, string username)
     {
         // If player with given id exists dont instantiate him 
@@ -147,7 +91,6 @@ public class Player : NetworkedEntity<Player>
         player.name = $"Player {id} ({(username == "" ? "Guest" : username)})";
         player.id = id;
         player.username = username;
-        player.simpleDS.ID = id;
 
         player.SendSpawn();
         List.Add(player.id, player);
@@ -171,7 +114,6 @@ public class Player : NetworkedEntity<Player>
         Message message = Message.Create(MessageSendMode.reliable, (ushort)ServerToClientId.spawn);
         message.Add(GetNetworkedObjectType);
         message.Add(id);
-        Debug.Log(id);
         message.Add(username);
         message.Add(transform.position);
         NetworkManager.Singleton.Server.Send(message, toClient);
@@ -182,23 +124,19 @@ public class Player : NetworkedEntity<Player>
         rb.freezeRotation = true;
         rb.isKinematic = true;
         lastFrame = 0;
-        //logicTimer = new LogicTimer(() => FixedTime());
     }
 
 
     private void Start()
     {
         playerMovement.SetTransformAndRigidbody(transform, rb);
-        //logicTimer.Start();
     }
 
     void FixedUpdate()
     {
         //ProcessInputs();
         rb.isKinematic = true;
-        rb.freezeRotation = false;
-        transform.position = carPosition;
-        transform.rotation = carRotation;
+        rb.freezeRotation = true;
         SendMessages.SetTransform(this);
         //SendMessages.PlayerAnimation(this);
     }

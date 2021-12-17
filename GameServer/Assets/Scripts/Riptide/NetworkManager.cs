@@ -10,7 +10,6 @@ public enum ServerToClientId : ushort
     serverSimulationState,
     serverConvar,
     serverTick,
-    clientSnapshot = 101,
 }
 
 public enum ClientToServerId : ushort
@@ -18,7 +17,6 @@ public enum ClientToServerId : ushort
     playerName = 1,
     playerInput,
     playerConvar,
-    inputCommand = 101,
     carTransfortmToServer = 200,
 }
 
@@ -98,7 +96,7 @@ public class NetworkManager : MonoBehaviour
             if(Player.List.TryGetValue(i, out Player player))
                 player.tick = tick;
         }
-        // SendMessages.ServerTick();
+        SendMessages.ServerTick();
     }
 
     private void OnApplicationQuit()

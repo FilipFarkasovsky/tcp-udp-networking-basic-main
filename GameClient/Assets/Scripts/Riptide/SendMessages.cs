@@ -20,9 +20,6 @@ public class SendMessages : MonoBehaviour
         message.Add(_inputState.rotation);
 
         NetworkManager.Singleton.Client.Send(message);    
-
-        DebugScreen.packetsUp++;        
-        DebugScreen.bytesUp += message.WrittenLength;
     }
 
     /// <summary>Sends request to change convar.</summary>
@@ -34,8 +31,5 @@ public class SendMessages : MonoBehaviour
         message.Add(_value);
 
         NetworkManager.Singleton.Client.Send(message);
-        
-        DebugScreen.packetsUp++;        
-        DebugScreen.bytesUp += message.WrittenLength;
     }
 }

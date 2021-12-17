@@ -22,32 +22,12 @@ public class HandleMessages : MonoBehaviour
     [MessageHandler((ushort)ServerToClientId.setTransform)]
     public static void SetTransform(Message message)
     {
-        DebugScreen.bytesDown += message.WrittenLength;
-        DebugScreen.packetsDown++;
-
-        byte type = message.GetByte();
-        switch (type)
-        {
-            case (byte)NetworkedObjectType.player:
-                Player.SetTransform(message);
-                break;
-            case (byte)NetworkedObjectType.enemy:
-                Enemy.SetTransform(message);
-                break;
-            case (byte)NetworkedObjectType.box:
-                InterpolationTest.SetTransform(message);
-                break;
-            default:
-                break;
-        }
+        
     }
 
     [MessageHandler((ushort)ServerToClientId.playerAnimation)]
     public static void PlayerAnimation(Message message)
     {
-        DebugScreen.bytesDown += message.WrittenLength;
-        DebugScreen.packetsDown++;
-
         ushort id = message.GetUShort();
         bool _isFiring = message.GetBool();
         float _lateralSpeed = message.GetFloat();
@@ -62,13 +42,9 @@ public class HandleMessages : MonoBehaviour
         }
     }
 
-
     [MessageHandler((ushort)ServerToClientId.serverSimulationState)]
     public static void SimulationState(Message message)
     {
-        DebugScreen.bytesDown += message.WrittenLength;
-        DebugScreen.packetsDown++;
-
         SimulationState simulationState = new SimulationState();
 
         simulationState.simulationFrame = message.GetInt();
@@ -84,9 +60,6 @@ public class HandleMessages : MonoBehaviour
     [MessageHandler((ushort)ServerToClientId.serverConvar)]
     public static void ServerConvar(Message message)
     {
-        DebugScreen.bytesDown += message.WrittenLength;
-        DebugScreen.packetsDown++;        
-
         string name =message.GetString();
         float value = message.GetFloat();
         string helpString = message.GetString();
@@ -108,9 +81,6 @@ public class HandleMessages : MonoBehaviour
     [MessageHandler((ushort)ServerToClientId.serverTick)]
     public static void ServerTick(Message message)
     {
-        DebugScreen.bytesDown += message.WrittenLength;
-        DebugScreen.packetsDown++;                
-
         int _serverTick = message.GetInt();
         if(_serverTick > GlobalVariables.serverTick)
             GlobalVariables.serverTick = _serverTick;

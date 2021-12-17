@@ -27,8 +27,6 @@ public class PlayerMovement: MonoBehaviour
         rb = rigidbody;
     }
 
-    #region Old System
-
     // Normalizes rotation
     public void RotationCheck(ClientInputState inputs)
     {
@@ -45,7 +43,6 @@ public class PlayerMovement: MonoBehaviour
         else
             AirMove(inputs);
     }
-    #endregion
 
     #region Movement
     void GroundCheck()

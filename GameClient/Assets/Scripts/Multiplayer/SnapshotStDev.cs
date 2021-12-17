@@ -1,9 +1,7 @@
 using System;
 using System.Collections.Generic;
 using UnityEngine;
-using RiptideNetworking;
 
-/// <summary> Cool delta snapshot </summary>
 public class SnapshotStDev : MonoBehaviour
 {
     struct Snapshot
@@ -14,8 +12,8 @@ public class SnapshotStDev : MonoBehaviour
         public float DeliveryTime;
     }
 
-    float TimeLastSnapshotReceived; // Time when last snapshot receved
-    float TimeSinceLastSnapshotReceived; // Time since last snapshot received
+    float TimeLastSnapshotReceived; 
+    float TimeSinceLastSnapshotReceived; 
 
     [SerializeField] float DelayTarget; 
     [SerializeField] float RealDelayTarget;
@@ -23,20 +21,18 @@ public class SnapshotStDev : MonoBehaviour
 
     [SerializeField] float MaxServerTimeReceived;
     [SerializeField] float InterpolationTime;
-    [SerializeField] float InterpTimeScale;   // Advvanced | Determines how fast or slow is lerpAmount getting increased
+    [SerializeField] float InterpTimeScale;   
 
     [SerializeField] int SNAPSHOT_OFFSET_COUNT = 2;
 
-    Queue<Snapshot> NetworkSimQueue = new Queue<Snapshot>(); // Server | vypocty servera
-    List<Snapshot> Snapshots = new List<Snapshot>(); // Client | snapshoty ziskane od servera
+    Queue<Snapshot> NetworkSimQueue = new Queue<Snapshot>();
+    List<Snapshot> Snapshots = new List<Snapshot>(); 
 
-    const int SNAPSHOT_RATE = 32;   // Tickrate
-    const float SNAPSHOT_INTERVAL = 1.0f / SNAPSHOT_RATE;   // Time between snapshots 
+    const int SNAPSHOT_RATE = 32;   
+    const float SNAPSHOT_INTERVAL = 1.0f / SNAPSHOT_RATE;  
 
     [SerializeField] float INTERP_NEGATIVE_THRESHOLD;
     [SerializeField] float INTERP_POSITIVE_THRESHOLD;
-
-    float lastSnapshot;
 
     void Start()
     {
@@ -56,7 +52,6 @@ public class SnapshotStDev : MonoBehaviour
 
     void ClientUpdateInterpolationTime()
     {
-        // Setting interpolation time
         InterpolationTime += (Time.unscaledDeltaTime * InterpTimeScale);
     }
 
@@ -72,6 +67,7 @@ public class SnapshotStDev : MonoBehaviour
             var snapshot = NetworkSimQueue.Dequeue();
             
             Snapshots.Add(snapshot);
+
             // Get server time
             MaxServerTimeReceived = Math.Max(MaxServerTimeReceived, snapshot.Time);
 
@@ -89,7 +85,7 @@ public class SnapshotStDev : MonoBehaviour
             DelayTarget = (SNAPSHOT_INTERVAL * SNAPSHOT_OFFSET_COUNT) + SnapshotDeliveryDeltaAvg.Mean + (SnapshotDeliveryDeltaAvg.Value * 2f);
         }
 
-        // Compute real delay target
+        // Compute real delay target  
         RealDelayTarget = (MaxServerTimeReceived + TimeSinceLastSnapshotReceived - InterpolationTime) - DelayTarget;
 
         if (RealDelayTarget > (SNAPSHOT_INTERVAL * INTERP_POSITIVE_THRESHOLD))
@@ -106,11 +102,11 @@ public class SnapshotStDev : MonoBehaviour
     {
         if (Snapshots.Count > 0)
         {
-            var prev_Pos = default(Vector3);
-            var new_Pos = default(Vector3);
+            var previousPosition = default(Vector3);
+            var newPosition = default(Vector3);
 
-            var prev_Rot = default(Quaternion);
-            var new_Rot = default(Quaternion);
+            var previousRotation = default(Quaternion);
+            var newRotation = default(Quaternion);
 
             var interpAlpha = default(float);
 
@@ -120,14 +116,14 @@ public class SnapshotStDev : MonoBehaviour
                 {
                     if (Snapshots[0].Time > InterpolationTime)
                     {
-                        prev_Pos = new_Pos = Snapshots[0].Position;
-                        prev_Rot = new_Rot = Snapshots[0].Rotation;
+                        previousPosition = newPosition = Snapshots[0].Position;
+                        previousRotation = newRotation = Snapshots[0].Rotation;
                         interpAlpha = 0;
                     }
                     else
                     {
-                        prev_Pos = new_Pos = Snapshots[i].Position;
-                        prev_Rot = new_Rot = Snapshots[i].Rotation;
+                        previousPosition = newPosition = Snapshots[i].Position;
+                        previousRotation = newRotation = Snapshots[i].Rotation;
                         interpAlpha = 0;
                     }
                 }
@@ -139,11 +135,11 @@ public class SnapshotStDev : MonoBehaviour
 
                     if (Snapshots[f].Time <=InterpolationTime && Snapshots[t].Time >= InterpolationTime)
                     {
-                        prev_Pos = Snapshots[f].Position;
-                        new_Pos = Snapshots[t].Position;
+                        previousPosition = Snapshots[f].Position;
+                        newPosition = Snapshots[t].Position;
 
-                        prev_Rot = Snapshots[f].Rotation;
-                        new_Rot = Snapshots[t].Rotation;
+                        previousRotation = Snapshots[f].Rotation;
+                        newRotation = Snapshots[t].Rotation;
 
                         var range = Snapshots[t].Time - Snapshots[f].Time;
                         var current = InterpolationTime - Snapshots[f].Time;
@@ -155,8 +151,8 @@ public class SnapshotStDev : MonoBehaviour
                 }
             }
 
-            transform.rotation = Quaternion.Slerp(prev_Rot, new_Rot, interpAlpha);
-            transform.position = Vector3.Lerp(prev_Pos, new_Pos, interpAlpha);
+            transform.rotation = Quaternion.Slerp(previousRotation, newRotation, interpAlpha);
+            transform.position = Vector3.Lerp(previousPosition, newPosition, interpAlpha);
         }
     }
 
@@ -164,28 +160,12 @@ public class SnapshotStDev : MonoBehaviour
     {
         NetworkSimQueue.Enqueue(new Snapshot
         {
-            Time = Time.time,
+            Time = time,
             Position = position,
             Rotation = rotation,
-            DeliveryTime = Time.time - time,
+            DeliveryTime = Time.time,
         });
     }
-
-    public void ServerSnapshot( Vector3 position, Quaternion rotation)
-    {
-        if (lastSnapshot + Time.fixedDeltaTime < Time.time)
-        {
-            lastSnapshot = Time.time;
-            NetworkSimQueue.Enqueue(new Snapshot
-            {
-                Time = lastSnapshot,
-                Position = position,
-                Rotation = rotation,
-                DeliveryTime = Time.time,
-            });
-        }
-    }
-
 
     struct StdDev
     {

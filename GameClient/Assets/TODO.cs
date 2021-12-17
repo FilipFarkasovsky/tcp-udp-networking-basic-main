@@ -11,12 +11,11 @@ public class TODO : MonoBehaviour
     * V interpolation požiť len jednu implementaciu alebo to aspoň refaktorizovať
     * Vztvoriť jednu metodu na update v interpolation
     * input buttons zemniť int na ushort alebo byte
-    * Remove TomWeilands interpolation
     * Game pool
     * gameaction
     * dať scripty na jedno miesto a systematizovať
-    * dať všetky metody do update?
-    * add riptide to project 
+    * dať všetky metody do update? teda fixedTime 
+    * add new version riptide to project 
     
 
     */

@@ -12,8 +12,6 @@ public enum ServerToClientId : ushort
     serverConvar,
     serverTick,
     clientSnapshot = 101,
-
-
     serverSnapshot = 600,
 }
 public enum ClientToServerId : ushort
@@ -47,7 +45,7 @@ public class NetworkManager : MonoBehaviour
     public string ip;
     public ushort port;
 
-    public static Convar tickrate = new Convar("sv_tickrate", 32, "Ticks per second", Flags.NETWORK, 1, 128);
+    public Convar tickrate = new Convar("sv_tickrate", 32, "Ticks per second", Flags.NETWORK, 1, 128);
 
     [SerializeField] private GameObject localPlayerPrefab;
     public GameObject LocalPlayerPrefab => localPlayerPrefab;
@@ -59,7 +57,6 @@ public class NetworkManager : MonoBehaviour
     public GameObject EnemyPrefab => enemyPrefab;
 
     public Client Client { get; private set; }
-    private static LogicTimer logicTimer;
 
     private void Awake()
     {
@@ -81,16 +78,11 @@ public class NetworkManager : MonoBehaviour
 
     private void Update()
     {
-        // For high FPS clients  [Calculates lerpAmount and clientTick]
-        //if(DebugScreen.framesPerSec > tickrate.GetValue()) LerpManager.Update();
         LerpManager.Update();
     }
 
     private void FixedUpdate()
     {
-        // For low FPS clients  [Calculates lerpAmount and clientTick]
-        // if (DebugScreen.framesPerSec <= tickrate.GetValue()) LerpManager.FixedUpdate();
-
         // Execute networking operations (handled messages etc.)
         Client.Tick();
     }

@@ -3,21 +3,49 @@ using System.Collections.Generic;
 using UnityEngine;
 using RiptideNetworking;
 
+/// <summary> NetworkedEntityType </summary>
+public enum NetworkedObjectType : byte
+{
+    player = 1,
+    enemy,
+    undefined,
+}
+
 /// <summary> Represents networked entities - categorizes them, spawns them, moves them. </summary>
 /// <typeparam name="NetworkedObject">Class of the networked type</typeparam>
-public abstract class NetworkedEntity<NetworkedObject> : MonoBehaviour where NetworkedObject: NetworkedEntity<NetworkedObject> 
+public class NetworkedEntity<NetworkedObject> : MonoBehaviour 
+    where NetworkedObject: NetworkedEntity<NetworkedObject> 
 {
-    // List of of objects of the certain networked 
+    /// <summary> List for the objects of the certain networked type </summary>
     public static Dictionary<ushort, NetworkedObject> list { get; private set; } = new Dictionary<ushort, NetworkedObject>();
-
-    // Networked type 
-    public abstract byte GetNetworkedObjectType { get; set; }
-
-    // The id of the object in the list
-    public abstract ushort Id { get; }
+    /// <summary> Networked type  </summary> 
+    public NetworkedObjectType networkedObjectType;
+    /// <summary> The id of the object in the list </summary> 
+    public ushort id;
 
     public Interpolation interpolation;
     public Interpolation cameraInterpolation;
+
+    /// <summary> Gets the networked entity </summary> 
+    /// <param name="networkedType"> Networked object type or type of the list </param>
+    /// <param name="id"> The id of the object in the list </param>
+    /// <returns> Returns networked object from a certain list </returns>
+    public static T GetNetworkedEntity<T>(byte networkedType, ushort id) where T : NetworkedEntity<NetworkedObject>
+    {
+        switch (networkedType)
+        {
+            case (byte)NetworkedObjectType.player:
+                Player.list.TryGetValue(id, out Player player);
+                return player as T;
+            case (byte)NetworkedObjectType.enemy:
+                Enemy.list.TryGetValue(id, out Enemy enemy);
+                return enemy as T;
+            case (byte)NetworkedObjectType.undefined:
+            default:
+                list.TryGetValue(id, out NetworkedObject networkedObject);
+                return networkedObject as T;
+        }
+    }
 
     // Moves and rotates object
     public static void SetTransform(Message message)
@@ -70,15 +98,7 @@ public abstract class NetworkedEntity<NetworkedObject> : MonoBehaviour where Net
 
     protected void OnDestroy()
     {
-        list.Remove(Id);
+        list.Remove(id);
     }
 }
 
-public enum NetworkedObjectType : byte
-{
-    player = 1,
-    enemy,
-    car,
-    box,
-    wall,
-}

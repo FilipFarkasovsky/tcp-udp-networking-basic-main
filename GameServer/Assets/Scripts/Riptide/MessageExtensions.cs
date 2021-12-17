@@ -11,6 +11,7 @@ public static class MessageExtensions
         message.Add(value.x);
         message.Add(value.y);
     }
+
     /// <summary>Adds a Vector3 to the message.</summary>
     /// <param name="value">The Vector3 to add.</param>
     public static void Add(this Message message, Vector3 value)
@@ -19,6 +20,7 @@ public static class MessageExtensions
         message.Add(value.y);
         message.Add(value.z);
     }
+
     /// <summary>Adds a Quaternion to the message.</summary>
     /// <param name="value">The Quaternion to add.</param>
     public static void Add(this Message message, Quaternion value)

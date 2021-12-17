@@ -5,12 +5,8 @@ using System.Collections.Generic;
 /// <summary> Stores list of players, controls their interpolation and animation </summary>
 public class Player : NetworkedEntity<Player>
 {
-    public override byte GetNetworkedObjectType { get; set; } = (byte)NetworkedObjectType.enemy;
-    public override ushort Id { get => id; }
-
     public static ushort myId = 0;
 
-    public ushort id;
     public string username;
 
     public PlayerAnimation playerAnimation;
