@@ -12,6 +12,9 @@ public enum ServerToClientId : ushort
     serverConvar,
     serverTick,
     clientSnapshot = 101,
+
+
+    serverSnapshot = 600,
 }
 public enum ClientToServerId : ushort
 {
@@ -60,6 +63,7 @@ public class NetworkManager : MonoBehaviour
 
     private void Awake()
     {
+        Application.runInBackground = true;
         Singleton = this;
     }
 
@@ -77,12 +81,17 @@ public class NetworkManager : MonoBehaviour
 
     private void Update()
     {
-        // Call this function in update - updates lerpAmount and clientTick
+        // For high FPS clients  [Calculates lerpAmount and clientTick]
+        //if(DebugScreen.framesPerSec > tickrate.GetValue()) LerpManager.Update();
         LerpManager.Update();
     }
 
     private void FixedUpdate()
     {
+        // For low FPS clients  [Calculates lerpAmount and clientTick]
+        // if (DebugScreen.framesPerSec <= tickrate.GetValue()) LerpManager.FixedUpdate();
+
+        // Execute networking operations (handled messages etc.)
         Client.Tick();
     }
 

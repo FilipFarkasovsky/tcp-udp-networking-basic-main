@@ -5,6 +5,7 @@ using RiptideNetworking;
 
 public class UIManager : MonoBehaviour
 {
+    public GameObject menuCamera;
     private static UIManager _singleton;
     public static UIManager Singleton
     {
@@ -28,6 +29,7 @@ public class UIManager : MonoBehaviour
     /// <summary>Attempts to connect to the server.</summary>
     public void ConnectToServer()
     {
+        menuCamera.SetActive(false);
         connectScreen.SetActive(false);
         usernameField.interactable = false;
         adressField.interactable = false;
@@ -44,6 +46,7 @@ public class UIManager : MonoBehaviour
         public void BackToMain()
     {
         Cursor.lockState = CursorLockMode.Confined;
+        menuCamera.SetActive(true);
         usernameField.interactable = true;
         adressField.interactable = true;
         connectScreen.SetActive(true);

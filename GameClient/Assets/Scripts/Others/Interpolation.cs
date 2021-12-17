@@ -52,7 +52,6 @@ public class Interpolation : MonoBehaviour
     [SerializeField] public InterpolationMode mode;
     [SerializeField] public InterpolationImplemenation implementation;
     [SerializeField] public InterpolationTarget target;
-    public SimpleInterpolation tomWeilandInterpolation;
     public SnapshotStDev snapshotStDev;
 
     static public Convar interpolation = new Convar("cl_interp", 0.1f, "Visual delay for received updates", Flags.CLIENT, 0f, 0.5f);
@@ -84,15 +83,15 @@ public class Interpolation : MonoBehaviour
     [SerializeField] Transform clientSimObject;
     public Vector3 PreviousPosition;
 
-    private void OnGUI()
-    {
-        //GUI.Box(new Rect(5f, 5f, 180f, 25f), $"FUTURE COMMANDS {futureTransformUpdates?.Count}");
-        //GUI.Box(new Rect(5f, 95f, 180f, 25f), $"FPS {1000f/DebugScreen.framesPerSec}");
-        //GUI.Box(new Rect(5f, 125f, 180f, 25f), $"PING {DebugScreen.ping}");
-        GUI.Box(new Rect(5f, 65f, 180f, 25f), $"LAST POSITION {current.lastPosition}");
-        GUI.Box(new Rect(5f, 95f, 180f, 25f), $"CURRENT POSITION {current.position}");
-        GUI.Box(new Rect(5f, 155f, 180f, 25f), $"MISPREDICTIONS {DebugScreen.mispredictions}");
-    }
+    //private void OnGUI()
+    //{
+    //    GUI.Box(new Rect(5f, 5f, 180f, 25f), $"FUTURE COMMANDS {futureTransformUpdates?.Count}");
+    //    GUI.Box(new Rect(5f, 95f, 180f, 25f), $"FPS {1000f/DebugScreen.framesPerSec}");
+    //    GUI.Box(new Rect(5f, 125f, 180f, 25f), $"PING {DebugScreen.ping}");
+    //    GUI.Box(new Rect(5f, 65f, 180f, 25f), $"LAST POSITION {current.lastPosition}");
+    //    GUI.Box(new Rect(5f, 95f, 180f, 25f), $"CURRENT POSITION {current.position}");
+    //    GUI.Box(new Rect(5f, 155f, 180f, 25f), $"MISPREDICTIONS {DebugScreen.mispredictions}");
+    //}
 
     private void Start()
     {
@@ -124,16 +123,16 @@ public class Interpolation : MonoBehaviour
         {
             case InterpolationImplemenation.notAGoodUsername:
                 NotAGoodUsername();
-                tomWeilandInterpolation.enabled = false;
                 break;
             case InterpolationImplemenation.alex:
                 Alex();
-                tomWeilandInterpolation.enabled = false;
-                break;
-            case InterpolationImplemenation.tomWeiland:
-                tomWeilandInterpolation.enabled = true;
                 break;
         }
+    }
+
+    private void OnGUI()
+    {
+        GUI.Box(new Rect(5f, 5f, 180f, 25f), $"FUTURE COMMANDS {futureTransformUpdates?.Count}");
     }
 
     private void NotAGoodUsername()
@@ -193,9 +192,9 @@ public class Interpolation : MonoBehaviour
                 continue;
             }
 
+            // We want to get last tick
             if (update.tick <= last?.tick)
             {
-                futureTransformUpdates.Remove(update);
                 continue;
             }
 
@@ -214,7 +213,7 @@ public class Interpolation : MonoBehaviour
         // Set current tick
         current = futureTransformUpdates[0];
 
-        // If (time - time tick) <= interpolation amount, return
+        // If Delay AND (time - time tick) <= interpolation amount, return
         if (Time.time - current.time <= Utils.roundTimeToTimeStep(interpolation.GetValue()) && Delay)
             return;
 
@@ -227,43 +226,6 @@ public class Interpolation : MonoBehaviour
         lastLerpAmount = GlobalVariables.lerpAmount;
     }
 
-    // NotAGoodUsername implementation
-    // Used for LocalPlayer
-    private void LocalPlayerUpdate()
-    {
-        // There is no updates to lerp from, return
-        if (futureTransformUpdates.Count <= 0 || futureTransformUpdates[0] == null)
-            return;
-
-        // Set current tick
-        current = futureTransformUpdates[0];
-
-        // If (time - time tick) <= interpolation amount, return
-        if (Time.time - current.time <= Utils.roundTimeToTimeStep(interpolation.GetValue()) && Delay)
-            return;
-
-        timeElapsed = (timeElapsed * Utils.TickInterval() + Time.deltaTime) / Utils.TickInterval();
-
-        Interpolate(timeElapsed);
-
-        // While we have reached the target, move to the next and repeat
-        while (ReachedTarget(timeElapsed))
-        {
-            timeElapsed = (timeElapsed * Utils.TickInterval() - Utils.TickInterval()) / Utils.TickInterval();
-            timeElapsed = Mathf.Max(0f, timeElapsed);
-
-            if (futureTransformUpdates.Count <= 0)
-                break;
-
-            futureTransformUpdates.RemoveAt(0);
-            if (futureTransformUpdates.Count <= 0)
-                break;
-
-            // Set current tick
-            current = futureTransformUpdates[0];
-        }
-    }
-    
     // NotAGoodUsername implementation
     // Used for entitities that don't require lag compensation
     private void NonSyncedUpdate()
@@ -301,6 +263,43 @@ public class Interpolation : MonoBehaviour
         }
     }
 
+    // NotAGoodUsername implementation
+    // Used for LocalPlayer
+    private void LocalPlayerUpdate()
+    {
+        // There is no updates to lerp from, return
+        if (futureTransformUpdates.Count <= 0 || futureTransformUpdates[0] == null)
+            return;
+
+        // Set current tick
+        current = futureTransformUpdates[0];
+
+        // If (time - time tick) <= interpolation amount, return
+        if (Time.time - current.time <= Utils.roundTimeToTimeStep(interpolation.GetValue()) && Delay)
+            return;
+
+        timeElapsed = timeElapsed + Time.deltaTime / Utils.TickInterval();
+
+        Interpolate(timeElapsed);
+
+        // While we have reached the target, move to the next and repeat
+        while (ReachedTarget(timeElapsed))
+        {
+            timeElapsed = timeElapsed - 1;
+            timeElapsed = Mathf.Max(0f, timeElapsed);
+
+            if (futureTransformUpdates.Count <= 0)
+                break;
+
+            futureTransformUpdates.RemoveAt(0);
+            if (futureTransformUpdates.Count <= 0)
+                break;
+
+            // Set current tick
+            current = futureTransformUpdates[0];
+        }
+    }
+    
     // NotAGoodUsername implementation
     // Adds fake packets between real ones
     private void AccountForPacketLoss(TransformUpdate update, TransformUpdate last)
@@ -404,14 +403,14 @@ public class Interpolation : MonoBehaviour
         switch (mode)
         {
             case InterpolationMode.both:
-                InterpolatePosition(_lerpAmount);
-                InterpolateRotation(_lerpAmount);
+                transform.position = Vector3.Lerp(current.lastPosition, current.position, _lerpAmount);
+                transform.rotation = Quaternion.Slerp(current.lastRotation, current.rotation, _lerpAmount);
                 break;
             case InterpolationMode.position:
-                InterpolatePosition(_lerpAmount);
+                transform.position = Vector3.Lerp(current.lastPosition, current.position, _lerpAmount);
                 break;
             case InterpolationMode.rotation:
-                InterpolateRotation(_lerpAmount);
+                transform.rotation = Quaternion.Slerp(current.lastRotation, current.rotation, _lerpAmount);
                 break;
         }
     }
@@ -469,6 +468,7 @@ public class Interpolation : MonoBehaviour
 
             last = transformUpdate;
         }
+
         if(futureTransformUpdates[futureTransformUpdates.Count - 1] != null)
         {
             lastPosition = futureTransformUpdates[futureTransformUpdates.Count - 1].position;
@@ -585,7 +585,6 @@ public class Interpolation : MonoBehaviour
     {
         notAGoodUsername,
         alex,
-        tomWeiland,
     }
 
     public enum InterpolationTarget

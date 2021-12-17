@@ -265,7 +265,5 @@ public class SimpleDS : MonoBehaviour
         {
         //player.interpolation.ReceivedClientSnapshots.Enqueue(snapshot);
         }
-
-
     }
 }

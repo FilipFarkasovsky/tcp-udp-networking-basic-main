@@ -131,6 +131,7 @@ public class NetworkManager : MonoBehaviour
     private void PlayerLeft(object sender, ClientDisconnectedEventArgs e)
     {
         Debug.Log("disconnected");
-        Destroy(Player.List[e.Id].gameObject);
+        if(Player.List.TryGetValue(e.Id, out Player player))
+            Destroy(player);
     }
 }

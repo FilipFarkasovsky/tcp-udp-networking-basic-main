@@ -1,7 +1,6 @@
 ﻿using System;
 using UnityEngine;
 using System.Collections;
-using RiptideNetworking;
 
 public class ArcadeCar : MonoBehaviour
 {
@@ -9,17 +8,6 @@ public class ArcadeCar : MonoBehaviour
     const int WHEEL_RIGHT_INDEX = 1;
 
     const float wheelWidth = 0.085f;
-
-    /// <summary>Sends cars transform to the server.</summary>
-    public static void CarTransform(Transform transform)
-    {
-        Message message = Message.Create(MessageSendMode.unreliable, (ushort)ClientToServerId.carTransfortmToServer);
-
-        message.Add(transform.position);
-        message.Add(transform.rotation);
-
-        NetworkManager.Singleton.Client.Send(message);
-    }
 
     public class WheelData
     {
@@ -592,6 +580,8 @@ public class ArcadeCar : MonoBehaviour
 
     void FixedUpdate()
     {
+        Debug.DrawRay(transform.position, Vector3.up * 20, Color.red);
+
         UpdateInput();
 
         accelerationForceMagnitude = CalcAccelerationForceMagnitude();
@@ -706,9 +696,6 @@ public class ArcadeCar : MonoBehaviour
         {
             handBrakeSlipperyTiresTime = 0.0f;
         }
-
-        CarTransform(transform);
-
     }
 
     void OnGUI()

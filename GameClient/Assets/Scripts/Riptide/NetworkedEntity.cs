@@ -37,21 +37,26 @@ public abstract class NetworkedEntity<NetworkedObject> : MonoBehaviour where Net
         Vector3 position = message.GetVector3();
         Quaternion rotation = message.GetQuaternion();
         int serverTick = message.GetInt();
+        float time = message.GetFloat();
 
         if (serverTick > GlobalVariables.serverTick)
-            GlobalVariables.serverTick = serverTick;
+            GlobalVariables.serverTick = serverTick; 
+
+        if(interpolation == null)
+        {
+            transform.position = position;
+            transform.rotation = rotation;
+            return;
+        }
 
         switch (interpolation.implementation)
         {
             case Interpolation.InterpolationImplemenation.notAGoodUsername:
-                interpolation.NewUpdate(serverTick, position);
+                interpolation.NewUpdate(serverTick, position, rotation);
                 break;
             case Interpolation.InterpolationImplemenation.alex:
-                interpolation.snapshotStDev.Server.transform.position = position;
-                interpolation.snapshotStDev.ServerSnapshot();
-                break;
-            case Interpolation.InterpolationImplemenation.tomWeiland:
-                interpolation.tomWeilandInterpolation.NewUpdate(serverTick, position);
+                interpolation.snapshotStDev.ServerSnapshot(position, rotation, time);
+                //interpolation.snapshotStDev.ServerSnapshot(position, rotation);
                 break;
         }
 

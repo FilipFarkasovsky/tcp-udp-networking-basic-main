@@ -25,13 +25,17 @@ public class HandleMessages : MonoBehaviour
         DebugScreen.bytesDown += message.WrittenLength;
         DebugScreen.packetsDown++;
 
-        switch (message.GetByte())
+        byte type = message.GetByte();
+        switch (type)
         {
             case (byte)NetworkedObjectType.player:
                 Player.SetTransform(message);
                 break;
             case (byte)NetworkedObjectType.enemy:
                 Enemy.SetTransform(message);
+                break;
+            case (byte)NetworkedObjectType.box:
+                InterpolationTest.SetTransform(message);
                 break;
             default:
                 break;

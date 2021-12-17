@@ -77,8 +77,8 @@ public class HandleMessages
         if (!Player.List.TryGetValue(_fromClient, out Player player))
             return;
 
-        player.transform.position = message.GetVector3();
-        player.transform.rotation = message.GetQuaternion();
+        player.carPosition = message.GetVector3();
+        player.carRotation = message.GetQuaternion();
     }
 
 }

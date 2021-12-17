@@ -81,6 +81,9 @@ public class Player : NetworkedEntity<Player>
     public float forwardSpeed;
     public bool jumping;
 
+    public Vector3 carPosition;
+    public Quaternion carRotation;
+
     // ---------------------- NEW SYSTEM ------------------------
     #region Structs
 
@@ -137,10 +140,10 @@ public class Player : NetworkedEntity<Player>
     {
         // If player with given id exists dont instantiate him 
         // This can sometimes happen, but i have not found out why or when
-        if (Player.List.ContainsKey(id))
+        if (List.ContainsKey(id))
             return;
 
-        Player player = Instantiate(NetworkManager.Singleton.PlayerPrefab, new Vector3(0f, 0f, 0f), Quaternion.identity).GetComponent<Player>();
+        Player player = Instantiate(NetworkManager.Singleton.PlayerPrefab, new Vector3(-100f, 5f, 130f), Quaternion.identity).GetComponent<Player>();
         player.name = $"Player {id} ({(username == "" ? "Guest" : username)})";
         player.id = id;
         player.username = username;
@@ -192,6 +195,10 @@ public class Player : NetworkedEntity<Player>
     void FixedUpdate()
     {
         //ProcessInputs();
+        rb.isKinematic = true;
+        rb.freezeRotation = false;
+        transform.position = carPosition;
+        transform.rotation = carRotation;
         SendMessages.SetTransform(this);
         //SendMessages.PlayerAnimation(this);
     }

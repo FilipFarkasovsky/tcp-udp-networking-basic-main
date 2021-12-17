@@ -95,6 +95,8 @@ MonoBehaviour:
   lateralSpeed: 0
   forwardSpeed: 0
   jumping: 0
+  carPosition: {x: 0, y: 0, z: 0}
+  carRotation: {x: 0, y: 0, z: 0, w: 0}
 --- !u!114 &285206330161519907
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -120,7 +122,7 @@ CapsuleCollider:
   m_GameObject: {fileID: 4573160584066692170}
   m_Material: {fileID: 13400000, guid: ca62a9ccb90ab2845ae28851ced8f178, type: 2}
   m_IsTrigger: 0
-  m_Enabled: 1
+  m_Enabled: 0
   m_Radius: 0.5
   m_Height: 2
   m_Direction: 1
@@ -137,7 +139,7 @@ Rigidbody:
   m_Drag: 0
   m_AngularDrag: 0.05
   m_UseGravity: 1
-  m_IsKinematic: 0
+  m_IsKinematic: 1
   m_Interpolate: 0
   m_Constraints: 0
   m_CollisionDetection: 0

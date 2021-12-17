@@ -45,16 +45,28 @@ public abstract class NetworkedEntity<NetworkedObject> : MonoBehaviour
         message.Add(transform.position);
         message.Add(transform.rotation);
         message.Add(NetworkManager.Singleton.tick);
+        message.Add(Time.time);
+        return message;
+    }
+
+    /// <summary> Sends players snapshot to clients </summary>
+    public Message SendSnapshot(Message message)
+    {
+        message.Add(Id);
+        message.Add(transform.position);
+        message.Add(transform.rotation);
+        message.Add(Time.time);
         return message;
     }
 
 
-    protected void Destroy()
+    public void Destroy()
     {
         Destroy(gameObject);
+        Destroy(this);
     }
 
-    protected void OnDestroy()
+    public void OnDestroy()
     {
         List.Remove(Id);
     }

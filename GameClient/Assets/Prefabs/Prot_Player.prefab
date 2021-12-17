@@ -43,12 +43,14 @@ MonoBehaviour:
   m_GameObject: {fileID: 2477461847856965794}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 6a4595639c5162843a2156e4466b0f2f, type: 3}
+  m_Script: {fileID: 11500000, guid: c8a3d335e95e83044b9253b712d4a153, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  interpolation: {fileID: 3499376697183321703}
+  cameraInterpolation: {fileID: 0}
   id: 0
   username: 
-  interpolation: {fileID: 3499376697183321703}
+  playerAnimation: {fileID: 0}
 --- !u!114 &3499376697183321703
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -62,12 +64,17 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   mode: 0
+  implementation: 0
+  target: 1
+  tomWeilandInterpolation: {fileID: 0}
+  snapshotStDev: {fileID: 0}
   timeElapsed: 0
   timeToReachTarget: 0.03125
-  isLocalPlayer: 0
   Sync: 1
   Delay: 0
   WaitForLerp: 0
+  clientSimObject: {fileID: 0}
+  PreviousPosition: {x: 0, y: 0, z: 0}
 --- !u!1 &2477461848161634569
 GameObject:
   m_ObjectHideFlags: 0

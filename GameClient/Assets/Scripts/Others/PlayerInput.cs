@@ -203,17 +203,10 @@ public class PlayerInput : MonoBehaviour
 
         if (playerManager.interpolation.implementation == Interpolation.InterpolationImplemenation.alex) playerManager.interpolation.PreviousPosition = rb.position;
         if (playerManager.interpolation.implementation == Interpolation.InterpolationImplemenation.notAGoodUsername) playerManager.interpolation.PlayerUpdate(simulationFrame, rb.position);
-        if (playerManager.interpolation.implementation == Interpolation.InterpolationImplemenation.tomWeiland) playerManager.interpolation.tomWeilandInterpolation.NewUpdate(simulationFrame, rb.position);
     }
 
     private void Update()
     {
-        //if (Input.GetKeyDown(KeyCode.V))
-        //{
-        //    vsyncToggle = !vsyncToggle;
-        //    QualitySettings.vSyncCount = vsyncToggle ? 1 : 0;
-        //}
-
         // Console is open, dont move
         if (consoleUI.isActive())
         {
