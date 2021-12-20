@@ -1,82 +1,71 @@
-using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using RiptideNetworking;
 
-/// <summary> Represents networked entities - makes list of them, spawns them, moves them. </summary>
-/// <typeparam name="NetworkedObject">Class of the networked type</typeparam>
-public abstract class NetworkedEntity<NetworkedObject> : MonoBehaviour 
+namespace Multiplayer
 {
-    // List of of objects of the certain networked 
-    public static Dictionary<ushort, NetworkedObject> List { get; private set; } = new Dictionary<ushort, NetworkedObject>();
-   
-    // Networked type 
-    public abstract byte GetNetworkedObjectType { get; set; }
-
-    // The id of the object in the list
-    public abstract ushort Id { get; }
-
-    // Sends all clients to spawn object
-    protected virtual void SendSpawn()
+    /// <summary> NetworkedEntityType </summary>
+    public enum NetworkedObjectType : byte
     {
-        Message message = Message.Create(MessageSendMode.reliable, (ushort)ServerToClientId.spawn);
-        message.Add(GetNetworkedObjectType);
-        message.Add(Id);
-        Debug.Log(Id);
-        message.Add(transform.position);
-        NetworkManager.Singleton.Server.SendToAll(message);
+        player = 1,
+        enemy,
+        undefined,
     }
 
-    // Sends certain client to spawn object
-    public virtual void SendSpawn(ushort toClient)
+    /// <summary> Represents networked entities - categorizes them, spawns them, moves them. </summary>
+    public class NetworkedEntity : MonoBehaviour
     {
-        Message message = Message.Create(MessageSendMode.reliable, (ushort)ServerToClientId.spawn);
-        message.Add(GetNetworkedObjectType);
-        message.Add(Id);
-        message.Add(transform.position);
-        NetworkManager.Singleton.Server.Send(message, toClient);
+        // List of the objects for the certain networked type 
+        public static Dictionary<ushort, Player> playerList { get; private set; } = new Dictionary<ushort, Player>();
+        public static Dictionary<ushort, Enemy> enemyList { get; private set; } = new Dictionary<ushort, Enemy>();
+        public static Dictionary<ushort, NetworkedEntity> undefinedList { get; private set; } = new Dictionary<ushort, NetworkedEntity>();
+
+        /// <summary> Networked type  </summary> 
+        public NetworkedObjectType networkedObjectType;
+
+        /// <summary> The id of the object in the list </summary> 
+        public ushort id;
+
+        // Sends all clients to spawn object
+        protected virtual void SendSpawn()
+        {
+            Message message = Message.Create(MessageSendMode.reliable, (ushort)ServerToClientId.spawn);
+            message.Add((byte)networkedObjectType);
+            message.Add(id);
+            message.Add(transform.position);
+            NetworkManager.Singleton.Server.SendToAll(message);
+        }
+
+        // Sends certain client to spawn object
+        public virtual void SendSpawn(ushort toClient)
+        {
+            Message message = Message.Create(MessageSendMode.reliable, (ushort)ServerToClientId.spawn);
+            message.Add((byte)networkedObjectType);
+            message.Add(id);
+            message.Add(transform.position);
+            NetworkManager.Singleton.Server.Send(message, toClient);
+        }
+
+        // Moves and rotates object
+        public virtual Message SetTransform(ref Message message)
+        {
+            message.Add((byte)networkedObjectType);
+            message.Add(id);
+            message.Add(transform.position);
+            message.Add(transform.rotation);
+            message.Add(NetworkManager.Singleton.tick);
+            message.Add(Time.time);
+            return message;
+        }
+
+        /// <summary> Sends players snapshot to clients </summary>
+        public Message SendSnapshot(Message message)
+        {
+            message.Add(id);
+            message.Add(transform.position);
+            message.Add(transform.rotation);
+            message.Add(Time.time);
+            return message;
+        }
     }
-
-    // Moves and rotates object
-    public virtual Message SetTransform(ref Message message)
-    {
-        message.Add(GetNetworkedObjectType);
-        message.Add(Id);
-        message.Add(transform.position);
-        message.Add(transform.rotation);
-        message.Add(NetworkManager.Singleton.tick);
-        message.Add(Time.time);
-        return message;
-    }
-
-    /// <summary> Sends players snapshot to clients </summary>
-    public Message SendSnapshot(Message message)
-    {
-        message.Add(Id);
-        message.Add(transform.position);
-        message.Add(transform.rotation);
-        message.Add(Time.time);
-        return message;
-    }
-
-
-    public void Destroy()
-    {
-        Destroy(gameObject);
-        Destroy(this);
-    }
-
-    public void OnDestroy()
-    {
-        List.Remove(Id);
-    }
-}
-
-public enum NetworkedObjectType : byte
-{
-    player = 1,
-    enemy,
-    car,
-    box,
-    wall,
 }

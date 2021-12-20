@@ -1,5 +1,6 @@
 ﻿using UnityEngine;
 using RiptideNetworking;
+using Multiplayer;
 
 public class SendMessages : MonoBehaviour
 {
@@ -29,6 +30,17 @@ public class SendMessages : MonoBehaviour
 
         message.Add(i.name);
         message.Add(_value);
+
+        NetworkManager.Singleton.Client.Send(message);
+    }
+
+    /// <summary> Client autoritative - Sends cars transform to the server.</summary>
+    public static void CarTransform(Transform transform)
+    {
+        Message message = Message.Create(MessageSendMode.unreliable, (ushort)ClientToServerId.carTransfortmToServer);
+
+        message.Add(transform.position);
+        message.Add(transform.rotation);
 
         NetworkManager.Singleton.Client.Send(message);
     }

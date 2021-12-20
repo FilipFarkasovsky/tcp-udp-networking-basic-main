@@ -1,7 +1,5 @@
-using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
-using RiptideNetworking;
+using Multiplayer;
 
 /// <summary> Controls only movement of local player </summary>
 public class PlayerMovement: MonoBehaviour

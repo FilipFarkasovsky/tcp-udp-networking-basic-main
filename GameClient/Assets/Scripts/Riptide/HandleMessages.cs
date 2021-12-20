@@ -1,5 +1,6 @@
 ﻿using UnityEngine;
 using RiptideNetworking;
+using Multiplayer;
 
 public class HandleMessages : MonoBehaviour
 {
@@ -14,6 +15,9 @@ public class HandleMessages : MonoBehaviour
             case (byte)NetworkedObjectType.enemy:
                 Enemy.Spawn(message.GetUShort(), message.GetVector3());
                 break;
+            case (byte)NetworkedObjectType.undefined:
+                NetworkedEntity.UndefinedSpawn(message.GetUShort(), message.GetVector3());
+                break;
             default:
                 break;
         }
@@ -22,7 +26,17 @@ public class HandleMessages : MonoBehaviour
     [MessageHandler((ushort)ServerToClientId.setTransform)]
     public static void SetTransform(Message message)
     {
-        
+        byte networkedType = message.GetByte();
+        ushort id = message.GetUShort();
+        Vector3 position = message.GetVector3();
+        Quaternion rotation = message.GetQuaternion();
+        int serverTick = message.GetInt();
+        float time = message.GetFloat();
+
+        if (NetworkedEntity.GetNetworkedEntity(networkedType, id, out NetworkedEntity networkedEntity))
+        {
+            networkedEntity.MoveTrans(position, rotation, serverTick, time);
+        }
     }
 
     [MessageHandler((ushort)ServerToClientId.playerAnimation)]
@@ -35,7 +49,7 @@ public class HandleMessages : MonoBehaviour
         bool _grounded = message.GetBool();
         bool _jumping = message.GetBool();
 
-        if (Player.list.TryGetValue(id, out Player player))
+        if (NetworkedEntity.playerList.TryGetValue(id, out Player player))
         {
             player.playerAnimation.IsFiring(_isFiring);
             player.playerAnimation.UpdateAnimatorProperties(_lateralSpeed, _forwardSpeed, _grounded, _jumping);
@@ -53,7 +67,7 @@ public class HandleMessages : MonoBehaviour
         //simulationState.rotation = message.GetQuaternion();
         //simulationState.angularVelocity = message.GetVector3();
 
-        if (Player.list.TryGetValue(Player.myId, out Player player))
+        if (NetworkedEntity.playerList.TryGetValue(Player.myId, out Player player))
             player.gameObject.GetComponentInChildren<PlayerInput>().OnServerSimulationStateReceived(simulationState);
     }
 

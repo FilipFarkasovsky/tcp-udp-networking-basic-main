@@ -1,6 +1,5 @@
-﻿using UnityEngine;
-using RiptideNetworking;
-using System.Collections.Generic;
+﻿using RiptideNetworking;
+using Multiplayer;
 
 public class HandleMessages
 {
@@ -25,7 +24,7 @@ public class HandleMessages
         inputState.VerticalAxis = message.GetFloat();
         inputState.rotation = message.GetQuaternion();
 
-        if (!Player.List.TryGetValue(_fromClient, out Player player))
+        if (!NetworkedEntity.playerList.TryGetValue(_fromClient, out Player player))
             return;
 
             player.AddInput(inputState);
@@ -38,7 +37,7 @@ public class HandleMessages
         float requestedValue = message.GetFloat();
 
         //Check if admin
-        if (!Player.List.TryGetValue(_fromClient, out Player player))
+        if (!NetworkedEntity.playerList.TryGetValue(_fromClient, out Player player))
             return;
 
         foreach (Convar i in Convars.list)
@@ -54,7 +53,7 @@ public class HandleMessages
     [MessageHandler((ushort)ClientToServerId.carTransfortmToServer)]
     public static void CarTransform(ushort _fromClient, Message message)
     {
-        if (!Player.List.TryGetValue(_fromClient, out Player player))
+        if (!NetworkedEntity.playerList.TryGetValue(_fromClient, out Player player))
             return;
 
         player.transform.position = message.GetVector3();

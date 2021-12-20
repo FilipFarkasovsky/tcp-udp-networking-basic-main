@@ -1,15 +1,19 @@
 ﻿using UnityEngine;
-using RiptideNetworking;
-using System.Collections.Generic;
 
 /// <summary> Stores list of players, controls their interpolation and animation </summary>
-public class Player : NetworkedEntity<Player>
+public class Player : Multiplayer.NetworkedEntity
 {
     public static ushort myId = 0;
 
     public string username;
 
     public PlayerAnimation playerAnimation;
+
+    private void OnDestroy()
+    {
+        playerList.Remove(id);
+        Destroy(gameObject);
+    }
 
     public static void Spawn(ushort id, string username, Vector3 position)
     {
@@ -22,6 +26,7 @@ public class Player : NetworkedEntity<Player>
         player.name = $"Player {id} ({username})";
         player.id = id;
         player.username = username;
-        list.Add(player.id, player);
+        playerList.Add(player.id, player);
     }
 }
+

@@ -26,15 +26,15 @@ public enum ClientToServerId : ushort
 /// <summary> Main core of the networking - conection handling, tick counting, spawning, disconnecting</summary>
 public class NetworkManager : MonoBehaviour
 {
-    private static NetworkManager _singleton;
+    private static NetworkManager singleton;
     public static NetworkManager Singleton
     {
-        get => _singleton;
+        get => singleton;
         private set
         {
-            if (_singleton == null)
-                _singleton = value;
-            else if (_singleton != value)
+            if (singleton == null)
+                singleton = value;
+            else if (singleton != value)
             {
                 Debug.Log($"{nameof(NetworkManager)} instance already exists, destroying object!");
                 Destroy(value);
@@ -56,7 +56,12 @@ public class NetworkManager : MonoBehaviour
     [SerializeField] private GameObject enemyPrefab;
     public GameObject EnemyPrefab => enemyPrefab;
 
+    [SerializeField] private GameObject undefinedPrefab;
+    public GameObject UndefinedPrefab => undefinedPrefab;
+
     public Client Client { get; private set; }
+
+    Multiplayer.LogicTimer logicTimer;
 
     private void Awake()
     {
@@ -66,6 +71,8 @@ public class NetworkManager : MonoBehaviour
 
     private void Start()
     {
+        logicTimer = new Multiplayer.LogicTimer(FixedTime);
+        logicTimer.Start();
         RiptideLogger.Initialize(Debug.Log, false);
 
         Client = new Client(new RudpClient());
@@ -78,13 +85,19 @@ public class NetworkManager : MonoBehaviour
 
     private void Update()
     {
-        LerpManager.Update();
+        Multiplayer.LerpManager.Update();
+        logicTimer.Update();
+    }
+
+    private void FixedTime()
+    {
+        // Execute networking operations (handled messages etc.)
+        Client.Tick();
     }
 
     private void FixedUpdate()
     {
-        // Execute networking operations (handled messages etc.)
-        Client.Tick();
+        
     }
 
     private void OnApplicationQuit()
@@ -114,13 +127,12 @@ public class NetworkManager : MonoBehaviour
 
     private void PlayerLeft(object sender, ClientDisconnectedEventArgs e)
     {
-        Destroy(Player.list[e.Id].gameObject);
+        Destroy(Multiplayer.NetworkedEntity.playerList[e.Id].gameObject);
     }
 
     private void DidDisconnect(object sender, EventArgs e)
     {
-        Destroy(Player.list[Client.Id].gameObject);
+        Destroy(Multiplayer.NetworkedEntity.playerList[Client.Id].gameObject);
         UIManager.Singleton.BackToMain();
-        
     }
 }

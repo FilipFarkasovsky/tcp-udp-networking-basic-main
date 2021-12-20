@@ -1,9 +1,7 @@
-using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
-using TMPro;
-using RiptideNetworking;
 using UnityEngine.UI;
+using TMPro;
+using Multiplayer;
 
 public class DebugScreen : MonoBehaviour
 {

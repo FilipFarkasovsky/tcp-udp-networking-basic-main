@@ -1,104 +1,99 @@
-using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
-using RiptideNetworking;
 
-/// <summary> NetworkedEntityType </summary>
-public enum NetworkedObjectType : byte
+namespace Multiplayer
 {
-    player = 1,
-    enemy,
-    undefined,
-}
-
-/// <summary> Represents networked entities - categorizes them, spawns them, moves them. </summary>
-/// <typeparam name="NetworkedObject">Class of the networked type</typeparam>
-public class NetworkedEntity<NetworkedObject> : MonoBehaviour 
-    where NetworkedObject: NetworkedEntity<NetworkedObject> 
-{
-    /// <summary> List for the objects of the certain networked type </summary>
-    public static Dictionary<ushort, NetworkedObject> list { get; private set; } = new Dictionary<ushort, NetworkedObject>();
-    /// <summary> Networked type  </summary> 
-    public NetworkedObjectType networkedObjectType;
-    /// <summary> The id of the object in the list </summary> 
-    public ushort id;
-
-    public Interpolation interpolation;
-    public Interpolation cameraInterpolation;
-
-    /// <summary> Gets the networked entity </summary> 
-    /// <param name="networkedType"> Networked object type or type of the list </param>
-    /// <param name="id"> The id of the object in the list </param>
-    /// <returns> Returns networked object from a certain list </returns>
-    public static T GetNetworkedEntity<T>(byte networkedType, ushort id) where T : NetworkedEntity<NetworkedObject>
+    /// <summary> NetworkedEntityType </summary>
+    public enum NetworkedObjectType : byte
     {
-        switch (networkedType)
-        {
-            case (byte)NetworkedObjectType.player:
-                Player.list.TryGetValue(id, out Player player);
-                return player as T;
-            case (byte)NetworkedObjectType.enemy:
-                Enemy.list.TryGetValue(id, out Enemy enemy);
-                return enemy as T;
-            case (byte)NetworkedObjectType.undefined:
-            default:
-                list.TryGetValue(id, out NetworkedObject networkedObject);
-                return networkedObject as T;
-        }
+        player = 1,
+        enemy,
+        undefined,
     }
 
-    // Moves and rotates object
-    public static void SetTransform(Message message)
+    /// <summary> Represents networked entities - categorizes them, spawns them, moves them. </summary>
+    public class NetworkedEntity : MonoBehaviour
     {
-        // Find object
-        ushort id = message.GetUShort();
+        // List of the objects for the certain networked type 
+        public static Dictionary<ushort, Player> playerList { get; private set; } = new Dictionary<ushort, Player>();
+        public static Dictionary<ushort, Enemy> enemyList { get; private set; } = new Dictionary<ushort, Enemy>();
+        public static Dictionary<ushort, NetworkedEntity> undefinedList { get; private set; } = new Dictionary<ushort, NetworkedEntity>();
 
-        if (list.TryGetValue(id, out NetworkedObject networkedObject))
+        /// <summary> Networked type  </summary> 
+        public NetworkedObjectType networkedObjectType;
+
+        /// <summary> The id of the object in the list </summary> 
+        public ushort id;
+
+        public Interpolation interpolation;
+        public Interpolation cameraInterpolation;
+
+        private void Start()
         {
-            // Move object
-            networkedObject.MoveTrans(message);
-        }
-    }
-
-    public virtual void MoveTrans(Message message)
-    {
-        Vector3 position = message.GetVector3();
-        Quaternion rotation = message.GetQuaternion();
-        int serverTick = message.GetInt();
-        float time = message.GetFloat();
-
-        if (serverTick > GlobalVariables.serverTick)
-            GlobalVariables.serverTick = serverTick; 
-
-        if(interpolation == null)
-        {
-            transform.position = position;
-            transform.rotation = rotation;
-            return;
+            if(networkedObjectType == NetworkedObjectType.undefined)
+            {
+                undefinedList.Add(id, this);
+            }
         }
 
-        switch (interpolation.implementation)
+        /// <summary> Gets the networked entity </summary> 
+        /// <param name="networkedType"> Networked object type or type of the list </param>
+        /// <param name="id"> The id of the object in the list </param>
+        /// <returns> Returns networked object from a certain list </returns>
+        public static bool GetNetworkedEntity(byte networkedType, ushort id, out NetworkedEntity networkedEntity)
         {
-            case Interpolation.InterpolationImplemenation.notAGoodUsername:
-                interpolation.NewUpdate(serverTick, position, rotation);
-                break;
-            case Interpolation.InterpolationImplemenation.alex:
-                interpolation.snapshotStDev.ServerSnapshot(position, rotation, time);
-                //interpolation.snapshotStDev.ServerSnapshot(position, rotation);
-                break;
+            switch (networkedType)
+            {
+                case (byte)NetworkedObjectType.player:
+                    playerList.TryGetValue(id, out Player player);
+                    return networkedEntity = player;
+                case (byte)NetworkedObjectType.enemy:
+                    enemyList.TryGetValue(id, out Enemy enemy);
+                    return networkedEntity = enemy;
+                case (byte)NetworkedObjectType.undefined:
+                    undefinedList.TryGetValue(id, out NetworkedEntity networkedObject);
+                    return networkedEntity = networkedObject;
+                default:
+                    networkedEntity = null;
+                    return false;
+            }
         }
 
-        if (cameraInterpolation) cameraInterpolation.NewUpdate(serverTick, rotation);
-    }
+        /// <summary> Moves entity - parameters are in the message </summary> 
+        public virtual void MoveTrans(Vector3 position, Quaternion rotation, int serverTick, float time)
+        {
+            if (serverTick > GlobalVariables.serverTick)
+                GlobalVariables.serverTick = serverTick;
 
-    protected void Destroy()
-    {
-        Destroy(gameObject);
-    }
+            if (interpolation == null)
+            {
+                transform.position = position;
+                transform.rotation = rotation;
+                return;
+            }
 
-    protected void OnDestroy()
-    {
-        list.Remove(id);
+            switch (interpolation.implementation)
+            {
+                case Interpolation.InterpolationImplemenation.notAGoodUsername:
+                    interpolation.NewUpdate(serverTick, position, rotation);
+                    break;
+                case Interpolation.InterpolationImplemenation.alex:
+                    interpolation.snapshotStDev.ServerSnapshot(position, rotation, time);
+                    //interpolation.snapshotStDev.ServerSnapshot(position, rotation);
+                    break;
+            }
+
+            if (cameraInterpolation) cameraInterpolation.NewUpdate(serverTick, rotation);
+        }
+
+        public static void UndefinedSpawn(ushort id, Vector3 position)
+        {
+            NetworkedEntity undefined = Instantiate(NetworkManager.Singleton.UndefinedPrefab, position, Quaternion.identity).GetComponent<NetworkedEntity>();
+            Debug.Log($"Spawning undefined with id {id}");
+
+            undefined.name = $"Undefined {id}";
+            undefined.id = id;
+            undefinedList.Add(id, undefined);
+        }
     }
 }
-

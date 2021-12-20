@@ -1,35 +1,5 @@
 %YAML 1.1
 %TAG !u! tag:unity3d.com,2011:
---- !u!1 &2791785296451345496
-GameObject:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  serializedVersion: 6
-  m_Component:
-  - component: {fileID: 2791785296451345499}
-  m_Layer: 0
-  m_Name: Server
-  m_TagString: Untagged
-  m_Icon: {fileID: 0}
-  m_NavMeshLayer: 0
-  m_StaticEditorFlags: 0
-  m_IsActive: 1
---- !u!4 &2791785296451345499
-Transform:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 2791785296451345496}
-  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: 4.199997}
-  m_LocalScale: {x: 0.3, y: 0.3, z: 0.3}
-  m_Children: []
-  m_Father: {fileID: 2791785298041904241}
-  m_RootOrder: 4
-  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &2791785296554148359
 GameObject:
   m_ObjectHideFlags: 0
@@ -137,12 +107,13 @@ MonoBehaviour:
   m_GameObject: {fileID: 2791785296554148359}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 1cf9eb15e9552e843ad6ec88f9e25e30, type: 3}
+  m_Script: {fileID: 11500000, guid: 56e369da03750874a93ba66117375cf1, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  networkedObjectType: 3
+  id: 2
   interpolation: {fileID: 2791785296554148355}
   cameraInterpolation: {fileID: 0}
-  id: 2
 --- !u!114 &2791785296554148355
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -178,16 +149,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: dc6aff983e8e53c49989e8c0ae07481d, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  Server: {fileID: 2791785297162220664}
-  Client: {fileID: 2791785296554148359}
-  _cDelayTarget: 0
-  _cRealDelayTarget: 0
-  _cMaxServerTimeReceived: 0
-  _cInterpolationTime: 0
-  _cInterpTimeScale: 0
+  InterpTimeScale: 1
   SNAPSHOT_OFFSET_COUNT: 2
-  INTERP_NEGATIVE_THRESHOLD: 0
-  INTERP_POSITIVE_THRESHOLD: 0
+  INTERP_NEGATIVE_THRESHOLD: 1
+  INTERP_POSITIVE_THRESHOLD: 2
 --- !u!1 &2791785296695005707
 GameObject:
   m_ObjectHideFlags: 0
@@ -295,12 +260,13 @@ MonoBehaviour:
   m_GameObject: {fileID: 2791785296695005707}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 1cf9eb15e9552e843ad6ec88f9e25e30, type: 3}
+  m_Script: {fileID: 11500000, guid: 56e369da03750874a93ba66117375cf1, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  networkedObjectType: 3
+  id: 0
   interpolation: {fileID: 2791785296695005700}
   cameraInterpolation: {fileID: 0}
-  id: 0
 --- !u!114 &2791785296695005700
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -320,7 +286,7 @@ MonoBehaviour:
   timeElapsed: 0
   timeToReachTarget: 0.1
   Sync: 0
-  Delay: 0
+  Delay: 1
   WaitForLerp: 0
   clientSimObject: {fileID: 0}
   PreviousPosition: {x: 0, y: 0, z: 0}
@@ -331,18 +297,12 @@ MonoBehaviour:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 2791785296695005707}
-  m_Enabled: 0
+  m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: dc6aff983e8e53c49989e8c0ae07481d, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  Server: {fileID: 2791785296451345496}
-  Client: {fileID: 2791785296695005707}
-  _cDelayTarget: 0
-  _cRealDelayTarget: 0
-  _cMaxServerTimeReceived: 0
-  _cInterpolationTime: 0
-  _cInterpTimeScale: 0
+  InterpTimeScale: 1
   SNAPSHOT_OFFSET_COUNT: 2
   INTERP_NEGATIVE_THRESHOLD: 0
   INTERP_POSITIVE_THRESHOLD: 0
@@ -453,12 +413,13 @@ MonoBehaviour:
   m_GameObject: {fileID: 2791785296951132719}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 1cf9eb15e9552e843ad6ec88f9e25e30, type: 3}
+  m_Script: {fileID: 11500000, guid: 56e369da03750874a93ba66117375cf1, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  networkedObjectType: 3
+  id: 1
   interpolation: {fileID: 2791785296951132715}
   cameraInterpolation: {fileID: 0}
-  id: 1
 --- !u!114 &2791785296951132715
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -476,9 +437,9 @@ MonoBehaviour:
   target: 2
   snapshotStDev: {fileID: 2791785296951132712}
   timeElapsed: 0
-  timeToReachTarget: 0
+  timeToReachTarget: 0.1
   Sync: 0
-  Delay: 0
+  Delay: 1
   WaitForLerp: 0
   clientSimObject: {fileID: 0}
   PreviousPosition: {x: 0, y: 0, z: 0}
@@ -489,51 +450,15 @@ MonoBehaviour:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 2791785296951132719}
-  m_Enabled: 0
+  m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: dc6aff983e8e53c49989e8c0ae07481d, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  Server: {fileID: 2791785298241375387}
-  Client: {fileID: 2791785296951132719}
-  _cDelayTarget: 0
-  _cRealDelayTarget: 0
-  _cMaxServerTimeReceived: 0
-  _cInterpolationTime: 0
-  _cInterpTimeScale: 0
+  InterpTimeScale: 1
   SNAPSHOT_OFFSET_COUNT: 2
   INTERP_NEGATIVE_THRESHOLD: 0
   INTERP_POSITIVE_THRESHOLD: 0
---- !u!1 &2791785297162220664
-GameObject:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  serializedVersion: 6
-  m_Component:
-  - component: {fileID: 2791785297162220667}
-  m_Layer: 0
-  m_Name: Server (2)
-  m_TagString: Untagged
-  m_Icon: {fileID: 0}
-  m_NavMeshLayer: 0
-  m_StaticEditorFlags: 0
-  m_IsActive: 1
---- !u!4 &2791785297162220667
-Transform:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 2791785297162220664}
-  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: 4.199997}
-  m_LocalScale: {x: 0.3, y: 0.3, z: 0.3}
-  m_Children: []
-  m_Father: {fileID: 2791785298041904241}
-  m_RootOrder: 6
-  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &2791785297414189487
 GameObject:
   m_ObjectHideFlags: 0
@@ -639,12 +564,13 @@ MonoBehaviour:
   m_GameObject: {fileID: 2791785297414189487}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 1cf9eb15e9552e843ad6ec88f9e25e30, type: 3}
+  m_Script: {fileID: 11500000, guid: 56e369da03750874a93ba66117375cf1, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  networkedObjectType: 3
+  id: 3
   interpolation: {fileID: 0}
   cameraInterpolation: {fileID: 0}
-  id: 3
 --- !u!1 &2791785298041904246
 GameObject:
   m_ObjectHideFlags: 0
@@ -676,39 +602,6 @@ Transform:
   - {fileID: 2791785296951132718}
   - {fileID: 2791785296554148358}
   - {fileID: 2791785297414189486}
-  - {fileID: 2791785296451345499}
-  - {fileID: 2791785298241375386}
-  - {fileID: 2791785297162220667}
   m_Father: {fileID: 0}
   m_RootOrder: 0
-  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!1 &2791785298241375387
-GameObject:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  serializedVersion: 6
-  m_Component:
-  - component: {fileID: 2791785298241375386}
-  m_Layer: 0
-  m_Name: Server (1)
-  m_TagString: Untagged
-  m_Icon: {fileID: 0}
-  m_NavMeshLayer: 0
-  m_StaticEditorFlags: 0
-  m_IsActive: 1
---- !u!4 &2791785298241375386
-Transform:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 2791785298241375387}
-  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: 4.199997}
-  m_LocalScale: {x: 0.3, y: 0.3, z: 0.3}
-  m_Children: []
-  m_Father: {fileID: 2791785298041904241}
-  m_RootOrder: 5
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}

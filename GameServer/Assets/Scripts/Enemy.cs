@@ -5,24 +5,21 @@ using UnityEngine;
 using UnityEngine.AI;
 using RiptideNetworking;
 
-public class Enemy : NetworkedEntity<Enemy>
+public class Enemy : Multiplayer.NetworkedEntity
 {
-    public override byte GetNetworkedObjectType { get; set; } = (byte)NetworkedObjectType.enemy;
-    public override ushort Id { get => id; }
 
     public static void Spawn(Vector3 position)
     {
         Enemy enemy = Instantiate(EnemySpawning.Singleton.EnemyPrefab, position, Quaternion.identity).GetComponent<Enemy>();
         enemy.name = $"Enemy {lastId}";
         enemy.id = lastId;
-        List.Add(lastId, enemy);
+        enemyList.Add(lastId, enemy);
         lastId++;
 
         enemy.SendSpawn();
     }
 
     public int health = 100;
-    public ushort id;
     private static ushort lastId = 0;
 
     private NavMeshAgent agent;

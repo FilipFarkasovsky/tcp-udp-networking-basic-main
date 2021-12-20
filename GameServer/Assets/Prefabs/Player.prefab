@@ -39,7 +39,6 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 4430480632124645266}
-  - component: {fileID: 4679903776243013952}
   - component: {fileID: 285206330161519907}
   - component: {fileID: 1610270297662328494}
   - component: {fileID: 8521745754849283522}
@@ -70,7 +69,7 @@ Transform:
   m_Father: {fileID: 0}
   m_RootOrder: 0
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!114 &4679903776243013952
+--- !u!114 &285206330161519907
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -82,11 +81,11 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 25b242d6488be3f439d44d70c12dcf80, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  simpleDS: {fileID: 285206330161519907}
+  networkedObjectType: 1
+  id: 0
   playerMovement: {fileID: 7589042581502044894}
   head: {fileID: 1596437379606348224}
   rb: {fileID: 8521745754849283522}
-  id: 0
   username: 
   tick: 0
   velocity: {x: 0, y: 0, z: 0}
@@ -95,24 +94,6 @@ MonoBehaviour:
   lateralSpeed: 0
   forwardSpeed: 0
   jumping: 0
-  carPosition: {x: 0, y: 0, z: 0}
-  carRotation: {x: 0, y: 0, z: 0, w: 0}
---- !u!114 &285206330161519907
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 4573160584066692170}
-  m_Enabled: 0
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: dec4374f8920db045a73044580326f5d, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  ServerSimObject: {fileID: 4573160584066692170}
-  ServerTick: 0
-  ServerRb: {fileID: 8521745754849283522}
-  ID: 0
 --- !u!136 &1610270297662328494
 CapsuleCollider:
   m_ObjectHideFlags: 0

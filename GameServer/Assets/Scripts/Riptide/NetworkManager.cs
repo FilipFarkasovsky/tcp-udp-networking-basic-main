@@ -1,6 +1,7 @@
 ﻿using RiptideNetworking;
 using RiptideNetworking.Transports.RudpTransport;
 using UnityEngine;
+using Multiplayer;
 
 public enum ServerToClientId : ushort
 {
@@ -93,7 +94,7 @@ public class NetworkManager : MonoBehaviour
     {
         for (ushort i = 1; i <= maxClientCount; i++)
         {
-            if(Player.List.TryGetValue(i, out Player player))
+            if(NetworkedEntity.playerList.TryGetValue(i, out Player player))
                 player.tick = tick;
         }
         SendMessages.ServerTick();
@@ -113,13 +114,13 @@ public class NetworkManager : MonoBehaviour
         Debug.Log("Connected");
 
         // New player conected, we need to send him position of all networked objects
-        foreach (Player player in Player.List.Values)
+        foreach (Player player in NetworkedEntity.playerList.Values)
         {
             if (player.id != e.Client.Id)
                 player.SendSpawn(e.Client.Id);
         }
 
-        foreach (Enemy enemy in Enemy.List.Values)
+        foreach (Enemy enemy in NetworkedEntity.enemyList.Values)
         {
             if (enemy.id != e.Client.Id)
                 enemy.SendSpawn(e.Client.Id);
@@ -129,7 +130,7 @@ public class NetworkManager : MonoBehaviour
     private void PlayerLeft(object sender, ClientDisconnectedEventArgs e)
     {
         Debug.Log("disconnected");
-        if(Player.List.TryGetValue(e.Id, out Player player))
+        if(NetworkedEntity.playerList.TryGetValue(e.Id, out Player player))
             Destroy(player);
     }
 }

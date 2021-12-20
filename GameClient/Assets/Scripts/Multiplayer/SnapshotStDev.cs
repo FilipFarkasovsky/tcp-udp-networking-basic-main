@@ -2,202 +2,228 @@ using System;
 using System.Collections.Generic;
 using UnityEngine;
 
-public class SnapshotStDev : MonoBehaviour
+namespace Multiplayer
 {
-    struct Snapshot
+    public class SnapshotStDev : MonoBehaviour
     {
-        public Vector3 Position;
-        public Quaternion Rotation;
-        public float Time;
-        public float DeliveryTime;
-    }
-
-    float TimeLastSnapshotReceived; 
-    float TimeSinceLastSnapshotReceived; 
-
-    [SerializeField] float DelayTarget; 
-    [SerializeField] float RealDelayTarget;
-
-
-    [SerializeField] float MaxServerTimeReceived;
-    [SerializeField] float InterpolationTime;
-    [SerializeField] float InterpTimeScale;   
-
-    [SerializeField] int SNAPSHOT_OFFSET_COUNT = 2;
-
-    Queue<Snapshot> NetworkSimQueue = new Queue<Snapshot>();
-    List<Snapshot> Snapshots = new List<Snapshot>(); 
-
-    const int SNAPSHOT_RATE = 32;   
-    const float SNAPSHOT_INTERVAL = 1.0f / SNAPSHOT_RATE;  
-
-    [SerializeField] float INTERP_NEGATIVE_THRESHOLD;
-    [SerializeField] float INTERP_POSITIVE_THRESHOLD;
-
-    void Start()
-    {
-        InterpTimeScale = 1;
-
-        SnapshotDeliveryDeltaAvg.Initialize(SNAPSHOT_RATE);
-    }
-
-    StdDev SnapshotDeliveryDeltaAvg;
-
-    void Update()
-    {
-        ClientUpdateInterpolationTime();
-        ClientReceiveDataFromServer();
-        ClientRenderLatestPostion();
-    }
-
-    void ClientUpdateInterpolationTime()
-    {
-        InterpolationTime += (Time.unscaledDeltaTime * InterpTimeScale);
-    }
-
-    void ClientReceiveDataFromServer()
-    {
-        var received = false;
-
-        while (NetworkSimQueue.Count > 0  && NetworkSimQueue.Peek().DeliveryTime < Time.time )
+        struct Snapshot
         {
-            if (Snapshots.Count == 0)
-                InterpolationTime = NetworkSimQueue.Peek().Time - (SNAPSHOT_INTERVAL * SNAPSHOT_OFFSET_COUNT);
-
-            var snapshot = NetworkSimQueue.Dequeue();
-            
-            Snapshots.Add(snapshot);
-
-            // Get server time
-            MaxServerTimeReceived = Math.Max(MaxServerTimeReceived, snapshot.Time);
-
-            received = true;
+            public Vector3 Position;
+            public Quaternion Rotation;
+            public float Time;
         }
 
-        // if we had received server snapshot
-        if (received)
-        {
-            SnapshotDeliveryDeltaAvg.Integrate(Time.time - TimeLastSnapshotReceived);
-            TimeLastSnapshotReceived = Time.time;
-            TimeSinceLastSnapshotReceived = 0f;
+        [Header("Debug properties")]
+        [SerializeField] float TimeLastSnapshotReceived;
+        [SerializeField] float TimeSinceLastSnapshotReceived;
 
-            // Compute delay target
-            DelayTarget = (SNAPSHOT_INTERVAL * SNAPSHOT_OFFSET_COUNT) + SnapshotDeliveryDeltaAvg.Mean + (SnapshotDeliveryDeltaAvg.Value * 2f);
+        [SerializeField] float DelayTarget;
+        [SerializeField] float RealDelayTarget;
+
+        [SerializeField] float MaxServerTimeReceived;
+        [SerializeField] float ScaledInterpolationTime;
+        private float NormalInterpolationTime;
+
+       [Header("Interpolation properties")]
+        [SerializeField] float InterpTimeScale = 1;
+        [SerializeField] int SNAPSHOT_OFFSET_COUNT = 2;
+
+        Queue<Snapshot> NetworkSimQueue = new Queue<Snapshot>();
+        List<Snapshot> Snapshots = new List<Snapshot>();
+
+        private const int SNAPSHOT_RATE = 32;
+        private const float SNAPSHOT_INTERVAL = 1.0f / SNAPSHOT_RATE;
+
+         // We will set up tresholds
+        [SerializeField] float INTERP_NEGATIVE_THRESHOLD = SNAPSHOT_INTERVAL * 0.5f;
+        [SerializeField] float INTERP_POSITIVE_THRESHOLD = SNAPSHOT_INTERVAL * 2f;
+
+        private StandardDeviation SnapshotDeliveryDeltaAvg;
+
+        Vector3 lastPosition;
+        Vector3 position;
+        Quaternion lastRotation;
+        Quaternion rotation;
+        float interpAlpha;
+
+        void Start()
+        {
+            InterpTimeScale = 1;
+
+            SnapshotDeliveryDeltaAvg.Initialize(SNAPSHOT_RATE);
         }
 
-        // Compute real delay target  
-        RealDelayTarget = (MaxServerTimeReceived + TimeSinceLastSnapshotReceived - InterpolationTime) - DelayTarget;
 
-        if (RealDelayTarget > (SNAPSHOT_INTERVAL * INTERP_POSITIVE_THRESHOLD))
-            InterpTimeScale = 1.05f;
-        else if (RealDelayTarget < (SNAPSHOT_INTERVAL * -INTERP_NEGATIVE_THRESHOLD))
-            InterpTimeScale = 0.95f;
-        else InterpTimeScale = 1.0f;
-
-        // Time since last snapshot received
-        TimeSinceLastSnapshotReceived += Time.unscaledDeltaTime;
-    }
-
-    void ClientRenderLatestPostion()
-    {
-        if (Snapshots.Count > 0)
+        void Update()
         {
-            var previousPosition = default(Vector3);
-            var newPosition = default(Vector3);
+            ClientReceiveDataFromServer();
+            ClientRenderLatestPostion();
+        }
 
-            var previousRotation = default(Quaternion);
-            var newRotation = default(Quaternion);
+        /// <summary> Vyratat hlavne timeScale a dat pridat snapshoty do List<Snapshot> </summary>
+        void ClientReceiveDataFromServer()
+        {
+            // time when we are going to interpolate - Current time - interpolation interval
+            ScaledInterpolationTime += (Time.unscaledDeltaTime * InterpTimeScale);
+            NormalInterpolationTime += (Time.unscaledDeltaTime);
+            TimeSinceLastSnapshotReceived += Time.unscaledDeltaTime;
 
-            var interpAlpha = default(float);
 
-            for (int i = 0; i < Snapshots.Count; ++i)
+            //checknut
+            // re·lne meökanie === re·lny Ëas ak˝ je teraz - Ëas kedy m· zaËaù interpol·cia - meökanie 
+            RealDelayTarget = (MaxServerTimeReceived + TimeSinceLastSnapshotReceived - ScaledInterpolationTime) - DelayTarget;
+
+            // zistit timeScale
+            if (RealDelayTarget > (SNAPSHOT_INTERVAL * INTERP_POSITIVE_THRESHOLD))
+                InterpTimeScale = 1.05f;
+            else if (RealDelayTarget < (SNAPSHOT_INTERVAL * -INTERP_NEGATIVE_THRESHOLD))
+                InterpTimeScale = 0.95f;
+            else InterpTimeScale = 1.0f;
+
+            // Time since last snapshot received
+            // --------------------  presunut na line 60 ku interpolationTime -----------------------
+        }
+
+        private void ReceivingSnapshot()
+        {
+            var received = false;
+
+            while (NetworkSimQueue.Count > 0)
             {
-                if (i + 1 == Snapshots.Count)
+                if (Snapshots.Count == 0)
                 {
-                    if (Snapshots[0].Time > InterpolationTime)
+                    ScaledInterpolationTime = NetworkSimQueue.Peek().Time - (SNAPSHOT_INTERVAL * SNAPSHOT_OFFSET_COUNT);
+                    NormalInterpolationTime = NetworkSimQueue.Peek().Time - (SNAPSHOT_INTERVAL * SNAPSHOT_OFFSET_COUNT);
+                }
+
+                var snapshot = NetworkSimQueue.Dequeue();
+
+                Snapshots.Add(snapshot);
+
+                // Max time when we are interpolating
+                MaxServerTimeReceived = Math.Max(MaxServerTimeReceived, snapshot.Time);
+
+                received = true;
+            }
+
+            // if we had received server snapshot
+            if (received)
+            {
+                // we sample the current time - the time of the last receivaed packet
+                SnapshotDeliveryDeltaAvg.Integrate(Time.time - TimeLastSnapshotReceived);
+                Debug.Log(Time.time - TimeLastSnapshotReceived);
+                TimeLastSnapshotReceived = Time.time;
+                TimeSinceLastSnapshotReceived = 0f;
+
+                // checknut
+                // meökanie     ===       dÂûka interpol·cie + priemer hodnÙt + 2 * smerodajn· odch˝lka
+                DelayTarget = (SNAPSHOT_INTERVAL * SNAPSHOT_OFFSET_COUNT) + SnapshotDeliveryDeltaAvg.Mean + (SnapshotDeliveryDeltaAvg.Value * 2f);
+            }
+        }
+
+        void ClientRenderLatestPostion()
+        {
+            if (Snapshots.Count > 0)
+            {
+                // zrefaktorizovaù
+                // moûno pouûiù Utils.TransformUpdate
+
+                // zoradime snapchoty
+                for (int i = 0; i < Snapshots.Count; ++i)
+                {
+                    // ak je to naposledy pridany snapchot
+                    // a sa nam ziaden iny interpolovat nepodarilo
+                    // stane sa to ak je prilis velky lag
+                    if (i + 1 == Snapshots.Count)
                     {
-                        previousPosition = newPosition = Snapshots[0].Position;
-                        previousRotation = newRotation = Snapshots[0].Rotation;
+                        lastPosition = position = Snapshots[i].Position;
+                        lastRotation = rotation = Snapshots[i].Rotation;
                         interpAlpha = 0;
                     }
                     else
                     {
-                        previousPosition = newPosition = Snapshots[i].Position;
-                        previousRotation = newRotation = Snapshots[i].Rotation;
-                        interpAlpha = 0;
+                        var f = i;
+                        var t = i + 1;
+
+                        // snazime sa najst snapshot ktory je na hranici interpolovanosti
+
+                        // normalInterpolationTime nefunguje dobre ak nestihne dojst snapshot 
+                        // lebo potom neexistuje    Snapshots[t].Time >= NormalInterpolationTime
+                        if (Snapshots[f].Time <= ScaledInterpolationTime && Snapshots[t].Time >= ScaledInterpolationTime)
+                        {
+                            lastPosition = Snapshots[f].Position;
+                            position = Snapshots[t].Position;
+
+                            lastRotation = Snapshots[f].Rotation;
+                            rotation = Snapshots[t].Rotation;
+
+                            // 
+                            var current = ScaledInterpolationTime - Snapshots[f].Time;
+                            // time between snapshots
+                            var range = Snapshots[t].Time - Snapshots[f].Time;      
+
+                            interpAlpha = Mathf.Clamp01(current / range);
+
+                            break;
+                        }
                     }
                 }
-                else
-                {
 
-                    var f = i;
-                    var t = i + 1;
+                // Lerping
+                transform.position = Vector3.Lerp(lastPosition, position, interpAlpha);
+                transform.rotation = Quaternion.Slerp(lastRotation, rotation, interpAlpha);
+            }
+        }
 
-                    if (Snapshots[f].Time <=InterpolationTime && Snapshots[t].Time >= InterpolationTime)
-                    {
-                        previousPosition = Snapshots[f].Position;
-                        newPosition = Snapshots[t].Position;
+        public void ServerSnapshot(Vector3 position, Quaternion rotation, float time)
+        {
+            NetworkSimQueue.Enqueue(new Snapshot
+            {
+                Time = time,
+                Position = position,
+                Rotation = rotation,
+            });
 
-                        previousRotation = Snapshots[f].Rotation;
-                        newRotation = Snapshots[t].Rotation;
+            ReceivingSnapshot();
+        }
 
-                        var range = Snapshots[t].Time - Snapshots[f].Time;
-                        var current = InterpolationTime - Snapshots[f].Time;
+        /// <summary>
+        /// Smerodajn· odch˝lka (inÈ n·zvy: ötandardn· odch˝lka, ötandardn· devi·cia, stredn· kvadratick· odch˝lka, stredn·/priemern· odch˝lka
+        /// </summary>
+        /// https://sk.wikipedia.org/wiki/Smerodajn·_odch˝lka
+        /// https://en.wikipedia.org/wiki/Standard_deviation
+        struct StandardDeviation
+        {
+            float mean; // priemer
+            float varianceSum; // s˙Ëet rozptylov
 
-                        interpAlpha = Mathf.Clamp01(current / range);
+            int index; 
+            float[] samples; // vzorky
 
-                        break;
-                    }
-                }
+            int maxWindowSize; // poËet vzoriek
+
+            public int Count => samples.Length; // poËet vzoriek 
+            public float Mean => mean; // priemer 
+            public float Variance => varianceSum / (maxWindowSize - 1); //  variaËn˝ koeficient
+            public float Value => Mathf.Sqrt(Variance); // stredn· kvadratick· odch˝lka
+
+            public void Initialize(int windowSize)
+            {
+                maxWindowSize = windowSize;
+                samples = new float[maxWindowSize];
             }
 
-            transform.rotation = Quaternion.Slerp(previousRotation, newRotation, interpAlpha);
-            transform.position = Vector3.Lerp(previousPosition, newPosition, interpAlpha);
-        }
-    }
+            public void Integrate(float sample)
+            {
+                index = (index + 1) % maxWindowSize;
+                float samplePrev = samples[index];
+                float meanPrev = mean;
 
-    public void ServerSnapshot(Vector3 position, Quaternion rotation, float time)
-    {
-        NetworkSimQueue.Enqueue(new Snapshot
-        {
-            Time = time,
-            Position = position,
-            Rotation = rotation,
-            DeliveryTime = Time.time,
-        });
-    }
+                mean += (sample - samplePrev) / maxWindowSize;
+                varianceSum += (sample + samplePrev - mean - meanPrev) * (sample - samplePrev);
 
-    struct StdDev
-    {
-        float mean;
-        float varianceSum;
-
-        int index;
-        float[] samples;
-
-        int maxWindowSize;
-
-        public int Count => samples.Length;
-        public float Mean => mean;
-        public float Variance => varianceSum / (maxWindowSize - 1);
-        public float Value => Mathf.Sqrt(Variance);
-
-        public void Initialize(int windowSize)
-        {
-            maxWindowSize = windowSize;
-            samples = new float[maxWindowSize];
-        }
-
-        public void Integrate(float sample)
-        {
-            index = (index + 1) % maxWindowSize;
-            float samplePrev = samples[index];
-            float meanPrev = mean;
-
-            mean += (sample - samplePrev) / maxWindowSize;
-            varianceSum += (sample + samplePrev - mean - meanPrev) * (sample - samplePrev);
-
-            samples[index] = sample;
+                samples[index] = sample;
+            }
         }
     }
 }

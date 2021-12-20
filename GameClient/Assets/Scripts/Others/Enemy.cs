@@ -1,9 +1,7 @@
-﻿using System.Collections.Generic;
-using UnityEngine;
-using RiptideNetworking;
+﻿using UnityEngine;
 
 /// <summary> Stores list of enemys </summary>
-class Enemy : NetworkedEntity<Enemy>
+public class Enemy : Multiplayer.NetworkedEntity
 {
     public static void Spawn(ushort id, Vector3 position)
     {
@@ -12,7 +10,7 @@ class Enemy : NetworkedEntity<Enemy>
 
         enemy.name = $"Enemy {id}";
         enemy.id = id;
-        list.Add(enemy.id, enemy);
+        enemyList.Add(enemy.id, enemy);
     }
 }
 

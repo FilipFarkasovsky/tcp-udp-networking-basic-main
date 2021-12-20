@@ -1,12 +1,12 @@
 ﻿using RiptideNetworking;
-using UnityEngine;
+using Multiplayer;
 
 public class SendMessages
 {
     #region Messages
     /// <summary>Sends a player's updated position and rotation to all clients except to the client himself (to avoid overwriting the player's simulation state).</summary>
     /// <param name="_player">The player whose position and rotation to update.</param>
-    public static void SetTransform<T>(NetworkedEntity<T> networkedObject)
+    public static void SetTransform(NetworkedEntity networkedObject)
     {
         if (networkedObject == null)
             return;
@@ -15,9 +15,9 @@ public class SendMessages
 
         networkedObject.SetTransform(ref message);
 
-        if(networkedObject.GetNetworkedObjectType == (byte)NetworkedObjectType.player)
+        if(networkedObject.networkedObjectType == Multiplayer.NetworkedObjectType.player)
         {
-            NetworkManager.Singleton.Server.SendToAll(message, networkedObject.Id);
+            NetworkManager.Singleton.Server.SendToAll(message, networkedObject.id);
         }
         else
         {
@@ -74,7 +74,7 @@ public class SendMessages
     /// <summary>Sends current server tick.</summary>
     public static void ServerTick()
     {
-        Message message = Message.Create(MessageSendMode.reliable, (ushort)ServerToClientId.serverTick);
+        Message message = Message.Create(MessageSendMode.unreliable, (ushort)ServerToClientId.serverTick);
 
             message.Add(NetworkManager.Singleton.tick);
 
