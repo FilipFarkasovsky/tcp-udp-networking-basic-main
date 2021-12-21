@@ -15,6 +15,7 @@ namespace Multiplayer
 
         private List<TransformUpdate> futureTransformUpdates = new List<TransformUpdate>();
 
+        private TransformUpdate current;
 
         private Vector3 lastPosition;
         private Quaternion lastRotation;
@@ -22,15 +23,11 @@ namespace Multiplayer
         private int lastTick;
         private float lastLerpAmount;
 
-        private TransformUpdate current;
-
-
         [SerializeField] private float timeElapsed = 0f;
         [SerializeField] private float timeToReachTarget = 0.1f;
 
-
-        public bool Delay = false;
-        public bool WaitForLerp = false;
+        [SerializeField] bool Delay = false;
+        [SerializeField] bool WaitForLerp = false;
 
         // ---------      ALEX
 
@@ -84,11 +81,6 @@ namespace Multiplayer
                     Alex();
                     break;
             }
-        }
-
-        private void OnGUI()
-        {
-            GUI.Box(new Rect(5f, 5f, 180f, 25f), $"FUTURE COMMANDS {futureTransformUpdates?.Count}");
         }
 
         private void NotAGoodUsername()
@@ -148,6 +140,7 @@ namespace Multiplayer
             if (futureTransformUpdates.Count <= 0 || futureTransformUpdates[0] == null)
                 return false;
 
+            // we remove incorrect updates and create new ones if needed
             TransformUpdate last = TransformUpdate.zero;
             foreach (TransformUpdate update in futureTransformUpdates.ToArray())
             {
@@ -185,15 +178,17 @@ namespace Multiplayer
             // Set current tick
             current = futureTransformUpdates[0];
 
-            // If Delay AND (time - time tick) <= interpolation, return
+            // It is very new update so we dont interpolate
             if (Time.time - current.time <= Utils.roundTimeToTimeStep(interpolation.GetValue()) && Delay)
+            {
                 return false;
+            }
 
             // Lerp amount moved to the next loop but the current target didnt move to the next tick, so dont interpolate
             if (lastTick == current.tick && GlobalVariables.lerpAmount < lastLerpAmount)
                 return false;
 
-            // if we passed we can interpolate
+            // everything is allright we can interpolate
             return true;
         }
 
@@ -356,7 +351,6 @@ namespace Multiplayer
             }
         }
 
-
         // Alex implementation
         private void LocalPlayerDeltaSnapshotUpdate()
         {
@@ -378,9 +372,7 @@ namespace Multiplayer
 
         }
 
-
         // Interpolates depending on the requested mode
-        #region Interpolate
         private void Interpolate(float _lerpAmount)
         {
             switch (mode)
@@ -398,21 +390,9 @@ namespace Multiplayer
             }
         }
 
-        private void InterpolatePosition(float _lerpAmount)
-        {
-            transform.position = Vector3.Lerp(current.lastPosition, current.position, _lerpAmount);
-        }
-
-        private void InterpolateRotation(float _lerpAmount)
-        {
-            transform.rotation = Quaternion.Slerp(current.lastRotation, current.rotation, _lerpAmount);
-        }
-        #endregion
-
         // Updates are used to add a new tick to the list
         // the list is sorted and then set the last tick info to the respective variables
         #region Updates
-
         internal void NewUpdate(int _tick, Vector3 _position, Quaternion _rotation)
         {
             futureTransformUpdates.Add(new TransformUpdate(_tick, Time.time, lastTime, _position, lastPosition, _rotation, lastRotation));

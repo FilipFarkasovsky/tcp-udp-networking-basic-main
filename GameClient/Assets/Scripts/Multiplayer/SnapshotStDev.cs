@@ -40,14 +40,13 @@ namespace Multiplayer
 
         private StandardDeviation SnapshotDeliveryDeltaAvg;
 
-        Vector3 lastPosition;
-        Vector3 position;
-        Quaternion lastRotation;
-        Quaternion rotation;
+        private TransformUpdate update;
         float interpAlpha;
 
         void Start()
         {
+            update = new TransformUpdate(0 , Time.time, Time.time, transform.position, transform.position, transform.rotation, transform.rotation);
+
             InterpTimeScale = 1;
 
             SnapshotDeliveryDeltaAvg.Initialize(SNAPSHOT_RATE);
@@ -67,7 +66,6 @@ namespace Multiplayer
             ScaledInterpolationTime += (Time.unscaledDeltaTime * InterpTimeScale);
             NormalInterpolationTime += (Time.unscaledDeltaTime);
             TimeSinceLastSnapshotReceived += Time.unscaledDeltaTime;
-
 
             //checknut
             // reálne meškanie === reálny èas aký je teraz - èas kedy má zaèa interpolácia - meškanie 
@@ -111,7 +109,7 @@ namespace Multiplayer
             {
                 // we sample the current time - the time of the last receivaed packet
                 SnapshotDeliveryDeltaAvg.Integrate(Time.time - TimeLastSnapshotReceived);
-                Debug.Log(Time.time - TimeLastSnapshotReceived);
+                // Debug.Log(Time.time - TimeLastSnapshotReceived);
                 TimeLastSnapshotReceived = Time.time;
                 TimeSinceLastSnapshotReceived = 0f;
 
@@ -136,8 +134,8 @@ namespace Multiplayer
                     // stane sa to ak je prilis velky lag
                     if (i + 1 == Snapshots.Count)
                     {
-                        lastPosition = position = Snapshots[i].Position;
-                        lastRotation = rotation = Snapshots[i].Rotation;
+                        update.lastPosition = update.position = Snapshots[i].Position;
+                        update.lastRotation = update.rotation = Snapshots[i].Rotation;
                         interpAlpha = 0;
                     }
                     else
@@ -151,11 +149,11 @@ namespace Multiplayer
                         // lebo potom neexistuje    Snapshots[t].Time >= NormalInterpolationTime
                         if (Snapshots[f].Time <= ScaledInterpolationTime && Snapshots[t].Time >= ScaledInterpolationTime)
                         {
-                            lastPosition = Snapshots[f].Position;
-                            position = Snapshots[t].Position;
+                            update.lastPosition = Snapshots[f].Position;
+                            update.position = Snapshots[t].Position;
 
-                            lastRotation = Snapshots[f].Rotation;
-                            rotation = Snapshots[t].Rotation;
+                            update.lastRotation = Snapshots[f].Rotation;
+                            update.rotation = Snapshots[t].Rotation;
 
                             // 
                             var current = ScaledInterpolationTime - Snapshots[f].Time;
@@ -170,8 +168,8 @@ namespace Multiplayer
                 }
 
                 // Lerping
-                transform.position = Vector3.Lerp(lastPosition, position, interpAlpha);
-                transform.rotation = Quaternion.Slerp(lastRotation, rotation, interpAlpha);
+                transform.position = Vector3.Lerp(update.lastPosition, update.position, interpAlpha);
+                transform.rotation = Quaternion.Slerp(update.lastRotation, update.rotation, interpAlpha);
             }
         }
 
@@ -184,7 +182,7 @@ namespace Multiplayer
                 Rotation = rotation,
             });
 
-            ReceivingSnapshot();
+            ReceivingSnapshot(); 
         }
 
         /// <summary>
