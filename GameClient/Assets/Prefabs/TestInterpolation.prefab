@@ -132,11 +132,21 @@ MonoBehaviour:
   snapshotStDev: {fileID: 2791785296554148352}
   timeElapsed: 0
   timeToReachTarget: 0.1
-  Sync: 0
   Delay: 0
   WaitForLerp: 0
   clientSimObject: {fileID: 0}
   PreviousPosition: {x: 0, y: 0, z: 0}
+  TimeLastSnapshotReceived: 0
+  TimeSinceLastSnapshotReceived: 0
+  DelayTarget: 0
+  RealDelayTarget: 0
+  MaxServerTimeReceived: 0
+  ScaledInterpolationTime: 0
+  NormalInterpolationTime: 0
+  InterpTimeScale: 1
+  SNAPSHOT_OFFSET_COUNT: 2
+  INTERP_NEGATIVE_THRESHOLD: 0.015625
+  INTERP_POSITIVE_THRESHOLD: 0.0625
 --- !u!114 &2791785296554148352
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -149,6 +159,12 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: dc6aff983e8e53c49989e8c0ae07481d, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  TimeLastSnapshotReceived: 0
+  TimeSinceLastSnapshotReceived: 0
+  DelayTarget: 0
+  RealDelayTarget: 0
+  MaxServerTimeReceived: 0
+  ScaledInterpolationTime: 0
   InterpTimeScale: 1
   SNAPSHOT_OFFSET_COUNT: 2
   INTERP_NEGATIVE_THRESHOLD: 1
@@ -183,11 +199,11 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 2791785296695005707}
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: 4.2}
+  m_LocalPosition: {x: 0, y: 0, z: 0.03}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children: []
   m_Father: {fileID: 2791785298041904241}
-  m_RootOrder: 0
+  m_RootOrder: 1
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!33 &2791785296695005697
 MeshFilter:
@@ -264,7 +280,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   networkedObjectType: 3
-  id: 0
+  id: 1
   interpolation: {fileID: 2791785296695005700}
   cameraInterpolation: {fileID: 0}
 --- !u!114 &2791785296695005700
@@ -285,11 +301,21 @@ MonoBehaviour:
   snapshotStDev: {fileID: 2791785296695005701}
   timeElapsed: 0
   timeToReachTarget: 0.1
-  Sync: 0
   Delay: 1
   WaitForLerp: 0
   clientSimObject: {fileID: 0}
   PreviousPosition: {x: 0, y: 0, z: 0}
+  TimeLastSnapshotReceived: 0
+  TimeSinceLastSnapshotReceived: 0
+  DelayTarget: 0
+  RealDelayTarget: 0
+  MaxServerTimeReceived: 0
+  ScaledInterpolationTime: 0
+  NormalInterpolationTime: 0
+  InterpTimeScale: 1
+  SNAPSHOT_OFFSET_COUNT: 2
+  INTERP_NEGATIVE_THRESHOLD: 0.015625
+  INTERP_POSITIVE_THRESHOLD: 0.0625
 --- !u!114 &2791785296695005701
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -302,6 +328,12 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: dc6aff983e8e53c49989e8c0ae07481d, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  TimeLastSnapshotReceived: 0
+  TimeSinceLastSnapshotReceived: 0
+  DelayTarget: 0
+  RealDelayTarget: 0
+  MaxServerTimeReceived: 0
+  ScaledInterpolationTime: 0
   InterpTimeScale: 1
   SNAPSHOT_OFFSET_COUNT: 2
   INTERP_NEGATIVE_THRESHOLD: 0
@@ -322,7 +354,7 @@ GameObject:
   - component: {fileID: 2791785296951132715}
   - component: {fileID: 2791785296951132712}
   m_Layer: 0
-  m_Name: Sphere (1)
+  m_Name: 'Sphere '
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -336,11 +368,11 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 2791785296951132719}
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalPosition: {x: 0, y: 0, z: 4.59}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children: []
   m_Father: {fileID: 2791785298041904241}
-  m_RootOrder: 1
+  m_RootOrder: 0
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!33 &2791785296951132711
 MeshFilter:
@@ -417,7 +449,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   networkedObjectType: 3
-  id: 1
+  id: 0
   interpolation: {fileID: 2791785296951132715}
   cameraInterpolation: {fileID: 0}
 --- !u!114 &2791785296951132715
@@ -438,11 +470,21 @@ MonoBehaviour:
   snapshotStDev: {fileID: 2791785296951132712}
   timeElapsed: 0
   timeToReachTarget: 0.1
-  Sync: 0
-  Delay: 1
+  Delay: 0
   WaitForLerp: 0
   clientSimObject: {fileID: 0}
   PreviousPosition: {x: 0, y: 0, z: 0}
+  TimeLastSnapshotReceived: 0
+  TimeSinceLastSnapshotReceived: 0
+  DelayTarget: 0
+  RealDelayTarget: 0
+  MaxServerTimeReceived: 0
+  ScaledInterpolationTime: 0
+  NormalInterpolationTime: 0
+  InterpTimeScale: 1
+  SNAPSHOT_OFFSET_COUNT: 2
+  INTERP_NEGATIVE_THRESHOLD: 0.015625
+  INTERP_POSITIVE_THRESHOLD: 0.0625
 --- !u!114 &2791785296951132712
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -455,6 +497,12 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: dc6aff983e8e53c49989e8c0ae07481d, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  TimeLastSnapshotReceived: 0
+  TimeSinceLastSnapshotReceived: 0
+  DelayTarget: 0
+  RealDelayTarget: 0
+  MaxServerTimeReceived: 0
+  ScaledInterpolationTime: 0
   InterpTimeScale: 1
   SNAPSHOT_OFFSET_COUNT: 2
   INTERP_NEGATIVE_THRESHOLD: 0
@@ -598,8 +646,8 @@ Transform:
   m_LocalPosition: {x: -76.27, y: 7, z: 195.53}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children:
-  - {fileID: 2791785296695005706}
   - {fileID: 2791785296951132718}
+  - {fileID: 2791785296695005706}
   - {fileID: 2791785296554148358}
   - {fileID: 2791785297414189486}
   m_Father: {fileID: 0}

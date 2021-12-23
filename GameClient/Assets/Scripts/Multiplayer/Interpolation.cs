@@ -6,6 +6,7 @@ namespace Multiplayer
     /// <summary> Controls interpolation of networked objects</summary>
     public class Interpolation : MonoBehaviour
     {
+        #region properties
         [SerializeField] public InterpolationMode mode;
         [SerializeField] public InterpolationImplemenation implementation;
         [SerializeField] public InterpolationTarget target;
@@ -13,7 +14,7 @@ namespace Multiplayer
 
         static public Convar interpolation = new Convar("cl_interp", 0.1f, "Visual delay for received updates", Flags.CLIENT, 0f, 0.5f);
 
-        private List<TransformUpdate> futureTransformUpdates = new List<TransformUpdate>();
+        public List<TransformUpdate> futureTransformUpdates = new List<TransformUpdate>();
 
         private TransformUpdate current;
 
@@ -35,6 +36,8 @@ namespace Multiplayer
         [SerializeField] Transform clientSimObject;
         public Vector3 PreviousPosition;
 
+        #endregion
+
         //private void OnGUI()
         //{
         //    GUI.Box(new Rect(5f, 5f, 180f, 25f), $"FUTURE COMMANDS {futureTransformUpdates?.Count}");
@@ -45,8 +48,38 @@ namespace Multiplayer
         //    GUI.Box(new Rect(5f, 155f, 180f, 25f), $"MISPREDICTIONS {DebugScreen.mispredictions}");
         //}
 
+
+        [Header("Debug properties")]
+        [SerializeField] float TimeLastSnapshotReceived;
+        [SerializeField] float TimeSinceLastSnapshotReceived;
+
+        [SerializeField] float DelayTarget;
+        [SerializeField] float RealDelayTarget;
+
+        [SerializeField] float MaxServerTimeReceived;
+        [SerializeField] float ScaledInterpolationTime;
+        private float NormalInterpolationTime;
+
+        [Header("Interpolation properties")]
+        [SerializeField] float InterpTimeScale = 1;
+        [SerializeField] int SNAPSHOT_OFFSET_COUNT = 2;
+
+        [SerializeField] float INTERP_NEGATIVE_THRESHOLD = SNAPSHOT_INTERVAL * 0.5f;
+        [SerializeField] float INTERP_POSITIVE_THRESHOLD = SNAPSHOT_INTERVAL * 2f;
+
+        Queue<Snapshot> NetworkSimQueue = new Queue<Snapshot>();
+        List<Snapshot> Snapshots = new List<Snapshot>();
+
+        private const int SNAPSHOT_RATE = 32;
+        private const float SNAPSHOT_INTERVAL = 1.0f / SNAPSHOT_RATE;
+
+        private StandardDeviation SnapshotDeliveryDeltaAvg;
+        float lerpAlpha;
+
+
         private void Start()
         {
+
             if (target == InterpolationTarget.localPlayer)
             {
                 Delay = false;
@@ -60,6 +93,8 @@ namespace Multiplayer
             if (currentTick < 0)
                 currentTick = 0;
 
+            current = new TransformUpdate(currentTick, Time.time, Time.time, transform.position, transform.position, transform.rotation, transform.rotation);
+
             lastPosition = transform.position;
             lastRotation = transform.rotation;
             lastTime = Time.time;
@@ -67,7 +102,7 @@ namespace Multiplayer
             lastTick = 0;
             lastLerpAmount = 0f;
 
-            current = new TransformUpdate(currentTick, Time.time, Time.time, transform.position, transform.position, transform.rotation, transform.rotation);
+            SnapshotDeliveryDeltaAvg.Initialize(SNAPSHOT_RATE);
         }
 
         private void Update()
@@ -136,6 +171,7 @@ namespace Multiplayer
         // We find our if there are any TransformUpdates we can interpolate from
         private bool CanWeInterpolateSyncedUpdate()
         {
+
             // There is no updates to lerp from, return
             if (futureTransformUpdates.Count <= 0 || futureTransformUpdates[0] == null)
                 return false;
@@ -146,7 +182,6 @@ namespace Multiplayer
             {
                 if (update == null || update == TransformUpdate.zero)
                 {
-                    futureTransformUpdates.Remove(update);
                     continue;
                 }
 
@@ -179,7 +214,7 @@ namespace Multiplayer
             current = futureTransformUpdates[0];
 
             // It is very new update so we dont interpolate
-            if (Time.time - current.time <= Utils.roundTimeToTimeStep(interpolation.GetValue()) && Delay)
+            if (Time.time - current.time < Utils.roundTimeToTimeStep(interpolation.GetValue()) && Delay)
             {
                 return false;
             }
@@ -354,7 +389,7 @@ namespace Multiplayer
         // Alex implementation
         private void LocalPlayerDeltaSnapshotUpdate()
         {
-            FixedStepAccumulator += Time.deltaTime;
+            FixedStepAccumulator += Time.unscaledDeltaTime;
 
             while (FixedStepAccumulator >= Time.fixedDeltaTime)
             {
@@ -369,7 +404,40 @@ namespace Multiplayer
         // Alex implementation 
         private void RemotePlayerDeltaSnapshot()
         {
+            if (Snapshots.Count > 0)
+            {
+                for (int i = 0; i < Snapshots.Count; ++i)
+                {
+                    if (i + 1 == Snapshots.Count)
+                    {
+                        current.lastPosition = current.position = Snapshots[i].Position;
+                        current.lastRotation = current.rotation = Snapshots[i].Rotation;
+                        lerpAlpha = 0;
+                    }
+                    else
+                    {
+                        var f = i;
+                        var t = i + 1;
 
+                        if (Snapshots[f].Time <= ScaledInterpolationTime && Snapshots[t].Time >= ScaledInterpolationTime)
+                        {
+                            current.lastPosition = Snapshots[f].Position;
+                            current.position = Snapshots[t].Position;
+
+                            current.lastRotation = Snapshots[f].Rotation;
+                            current.rotation = Snapshots[t].Rotation;
+
+                            var Current = ScaledInterpolationTime - Snapshots[f].Time;
+                            var range = Snapshots[t].Time - Snapshots[f].Time;
+
+                            lerpAlpha = Mathf.Clamp01(Current / range);
+
+                            break;
+                        }
+                    }
+                }
+                Interpolate(lerpAlpha);
+            }
         }
 
         // Interpolates depending on the requested mode
@@ -393,6 +461,65 @@ namespace Multiplayer
         // Updates are used to add a new tick to the list
         // the list is sorted and then set the last tick info to the respective variables
         #region Updates
+        internal void NewUpdate(int _tick, float time, Vector3 _position, Quaternion _rotation)
+        {
+            MaxServerTimeReceived = Mathf.Max(MaxServerTimeReceived, time);
+            SnapshotDeliveryDeltaAvg.Integrate(Time.time - TimeLastSnapshotReceived);
+            TimeLastSnapshotReceived = Time.time;
+            TimeSinceLastSnapshotReceived = 0f;
+            DelayTarget = (SNAPSHOT_INTERVAL * SNAPSHOT_OFFSET_COUNT) + SnapshotDeliveryDeltaAvg.Mean + (SnapshotDeliveryDeltaAvg.Value * 2f);
+
+            futureTransformUpdates.Add(new TransformUpdate(_tick, time, lastTime, _position, lastPosition, _rotation, lastRotation));
+
+            //if (!weHadReceivedInterpolationTime)
+            //{
+            //    ScaledInterpolationTime = NormalInterpolationTime = time - (SNAPSHOT_INTERVAL * SNAPSHOT_OFFSET_COUNT);
+            //    weHadReceivedInterpolationTime = true;
+            //}
+
+            if (futureTransformUpdates.Count <= 1)
+            {
+                lastPosition = _position;
+                lastRotation = _rotation;
+                lastTime = time;
+                return;
+            }
+
+            futureTransformUpdates.Sort(delegate (TransformUpdate x, TransformUpdate y)
+            {
+                return x.tick.CompareTo(y.tick);
+            });
+
+            // Purpose: after sorting the updates, we set the last positions/rotations
+            // This accounts for packets being out of order
+
+            TransformUpdate last = TransformUpdate.zero;
+            foreach (TransformUpdate transformUpdate in futureTransformUpdates)
+            {
+                if (transformUpdate == null)
+                    continue;
+
+                if (last != TransformUpdate.zero)
+                {
+                    transformUpdate.lastPosition = last.position;
+                    transformUpdate.lastRotation = last.rotation;
+                    transformUpdate.lastTime = last.time;
+
+                    lastPosition = last.position;
+                    lastRotation = last.rotation;
+                    lastTime = last.time;
+                }
+
+                last = transformUpdate;
+            }
+
+            if (futureTransformUpdates[futureTransformUpdates.Count - 1] != null)
+            {
+                lastPosition = futureTransformUpdates[futureTransformUpdates.Count - 1].position;
+                lastRotation = futureTransformUpdates[futureTransformUpdates.Count - 1].rotation;
+                lastTime = futureTransformUpdates[futureTransformUpdates.Count - 1].time;
+            }
+        }
         internal void NewUpdate(int _tick, Vector3 _position, Quaternion _rotation)
         {
             futureTransformUpdates.Add(new TransformUpdate(_tick, Time.time, lastTime, _position, lastPosition, _rotation, lastRotation));

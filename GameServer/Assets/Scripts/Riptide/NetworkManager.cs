@@ -62,11 +62,12 @@ public class NetworkManager : MonoBehaviour
         Application.targetFrameRate = tickrate.GetIntValue();
         QualitySettings.vSyncCount = 0;
 
-        #if UNITY_EDITOR
+
+#if UNITY_EDITOR
         RiptideLogger.Initialize(Debug.Log, false);
 #else
-        Console.Title = "Server";
-        Console.Clear();
+        System.Console.Title = "Server";
+        System.Console.Clear();
         Application.SetStackTraceLogType(LogType.Log, StackTraceLogType.None);
         RiptideLogger.Initialize(Debug.Log, true);
 #endif

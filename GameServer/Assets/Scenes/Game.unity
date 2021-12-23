@@ -1190,17 +1190,21 @@ PrefabInstance:
       propertyPath: m_Name
       value: Console
       objectReference: {fileID: 0}
+    - target: {fileID: 5191068452958842573, guid: 5988a7aa56b82664db09d62aca5c98f6, type: 3}
+      propertyPath: m_IsActive
+      value: 0
+      objectReference: {fileID: 0}
     - target: {fileID: 5191068453402476696, guid: 5988a7aa56b82664db09d62aca5c98f6, type: 3}
       propertyPath: m_SizeDelta.y
-      value: 0
+      value: -298.5797
       objectReference: {fileID: 0}
     - target: {fileID: 5191068453671398142, guid: 5988a7aa56b82664db09d62aca5c98f6, type: 3}
       propertyPath: m_AnchorMax.x
-      value: 0
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 5191068453671398142, guid: 5988a7aa56b82664db09d62aca5c98f6, type: 3}
       propertyPath: m_AnchorMax.y
-      value: 0
+      value: 1
       objectReference: {fileID: 0}
     m_RemovedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 5988a7aa56b82664db09d62aca5c98f6, type: 3}

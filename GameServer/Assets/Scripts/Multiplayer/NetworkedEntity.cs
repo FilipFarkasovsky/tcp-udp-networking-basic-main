@@ -54,7 +54,7 @@ namespace Multiplayer
             message.Add(transform.position);
             message.Add(transform.rotation);
             message.Add(NetworkManager.Singleton.tick);
-            message.Add(Time.time);
+            message.Add(Time.unscaledTime);
             return message;
         }
 

@@ -118,7 +118,7 @@ namespace Multiplayer
     }
 
     /// <summary> Stores positions and rotations at given tick - used for interpolation </summary>
-    class TransformUpdate
+    public class TransformUpdate
     {
         public static TransformUpdate zero = new TransformUpdate(0, 0, 0, Vector3.zero, Vector3.zero, Quaternion.identity, Quaternion.identity);
 
@@ -133,7 +133,7 @@ namespace Multiplayer
         public Quaternion rotation;
         public Quaternion lastRotation;
 
-        internal TransformUpdate(int _tick, float _time, float _lastTime, Vector3 _position, Vector3 _lastPosition)
+        internal  TransformUpdate(int _tick, float _time, float _lastTime, Vector3 _position, Vector3 _lastPosition)
         {
             tick = _tick;
             time = _time;
@@ -143,6 +143,7 @@ namespace Multiplayer
             lastPosition = _lastPosition;
 
             rotation = Quaternion.identity;
+            lastRotation = Quaternion.identity;
         }
 
         internal TransformUpdate(int _tick, float _time, float _lastTime, Quaternion _rotation, Quaternion _lastRotation)
@@ -152,6 +153,7 @@ namespace Multiplayer
             lastTime = _lastTime;
 
             position = Vector3.zero;
+            lastPosition = Vector3.zero;
 
             rotation = _rotation;
             lastRotation = _lastRotation;
@@ -184,7 +186,7 @@ namespace Multiplayer
         public float VerticalAxis;
         public Quaternion rotation; // Rotation of the camera - used mainly for simulation and lag compensation
     }
-
+    
     /// <summary> Stores byte for each button </summary>
     public struct Button
     {
@@ -211,6 +213,52 @@ namespace Multiplayer
                 angularVelocity = player.angularVelocity,
             };
         }
+    }
+
+    /// <summary> Standard deviation </summary>
+    /// https://en.wikipedia.org/wiki/Standard_deviation
+    public struct StandardDeviation
+    {
+        float mean; // priemer
+        float varianceSum; // súèet rozptylov
+
+        int index;
+        float[] samples; // vzorky
+
+        int maxWindowSize; // poèet vzoriek
+
+        public int Count => samples.Length; // poèet vzoriek 
+        public float Mean => mean; // priemer 
+        public float Variance => varianceSum / (maxWindowSize - 1); //  variaèný koeficient
+        public float Value => Mathf.Sqrt(Variance); // stredná kvadratická odchýlka
+
+        public void Initialize(int windowSize)
+        {
+            maxWindowSize = windowSize;
+            samples = new float[maxWindowSize];
+        }
+
+        public void Integrate(float sample)
+        {
+            index = (index + 1) % maxWindowSize;
+            float samplePrev = samples[index];
+            float meanPrev = mean;
+
+            mean += (sample - samplePrev) / maxWindowSize;
+            varianceSum += (sample + samplePrev - mean - meanPrev) * (sample - samplePrev);
+
+            samples[index] = sample;
+        }
+    }
+
+    /// <summary> Snapshot state sent to all clients - used for remote players interpolation </summary>
+    public struct Snapshot
+    {
+        public int Tick;
+        public float Time; 
+        public float DeliveryTime; // purpose: debugging and simulating network traffic
+        public Vector3 Position;
+        public Quaternion Rotation;
     }
 
 }

@@ -6,12 +6,6 @@ namespace Multiplayer
 {
     public class SnapshotStDev : MonoBehaviour
     {
-        struct Snapshot
-        {
-            public Vector3 Position;
-            public Quaternion Rotation;
-            public float Time;
-        }
 
         [Header("Debug properties")]
         [SerializeField] float TimeLastSnapshotReceived;
@@ -72,9 +66,11 @@ namespace Multiplayer
             RealDelayTarget = (MaxServerTimeReceived + TimeSinceLastSnapshotReceived - ScaledInterpolationTime) - DelayTarget;
 
             // zistit timeScale
-            if (RealDelayTarget > (SNAPSHOT_INTERVAL * INTERP_POSITIVE_THRESHOLD))
+            //if (RealDelayTarget > (SNAPSHOT_INTERVAL * INTERP_POSITIVE_THRESHOLD))
+            if (RealDelayTarget > 1/16f)
                 InterpTimeScale = 1.05f;
-            else if (RealDelayTarget < (SNAPSHOT_INTERVAL * -INTERP_NEGATIVE_THRESHOLD))
+            //else if (RealDelayTarget < (SNAPSHOT_INTERVAL * -INTERP_NEGATIVE_THRESHOLD))
+            else if (RealDelayTarget < - 1 /32f)
                 InterpTimeScale = 0.95f;
             else InterpTimeScale = 1.0f;
 
@@ -84,14 +80,13 @@ namespace Multiplayer
 
         private void ReceivingSnapshot()
         {
-            var received = false;
-
             while (NetworkSimQueue.Count > 0)
             {
+                // zadame ScaledInterpolationTime iba raz za hru
                 if (Snapshots.Count == 0)
                 {
-                    ScaledInterpolationTime = NetworkSimQueue.Peek().Time - (SNAPSHOT_INTERVAL * SNAPSHOT_OFFSET_COUNT);
-                    NormalInterpolationTime = NetworkSimQueue.Peek().Time - (SNAPSHOT_INTERVAL * SNAPSHOT_OFFSET_COUNT);
+                    ScaledInterpolationTime = NormalInterpolationTime = NetworkSimQueue.Peek().Time - (SNAPSHOT_INTERVAL * SNAPSHOT_OFFSET_COUNT);
+                    Debug.Log(NetworkSimQueue.Peek().Time);
                 }
 
                 var snapshot = NetworkSimQueue.Dequeue();
@@ -101,12 +96,6 @@ namespace Multiplayer
                 // Max time when we are interpolating
                 MaxServerTimeReceived = Math.Max(MaxServerTimeReceived, snapshot.Time);
 
-                received = true;
-            }
-
-            // if we had received server snapshot
-            if (received)
-            {
                 // we sample the current time - the time of the last receivaed packet
                 SnapshotDeliveryDeltaAvg.Integrate(Time.time - TimeLastSnapshotReceived);
                 // Debug.Log(Time.time - TimeLastSnapshotReceived);
@@ -182,46 +171,8 @@ namespace Multiplayer
                 Rotation = rotation,
             });
 
-            ReceivingSnapshot(); 
-        }
+            ReceivingSnapshot();
 
-        /// <summary>
-        /// Smerodajná odchýlka (iné názvy: štandardná odchýlka, štandardná deviácia, stredná kvadratická odchýlka, stredná/priemerná odchýlka
-        /// </summary>
-        /// https://sk.wikipedia.org/wiki/Smerodajná_odchýlka
-        /// https://en.wikipedia.org/wiki/Standard_deviation
-        struct StandardDeviation
-        {
-            float mean; // priemer
-            float varianceSum; // súèet rozptylov
-
-            int index; 
-            float[] samples; // vzorky
-
-            int maxWindowSize; // poèet vzoriek
-
-            public int Count => samples.Length; // poèet vzoriek 
-            public float Mean => mean; // priemer 
-            public float Variance => varianceSum / (maxWindowSize - 1); //  variaèný koeficient
-            public float Value => Mathf.Sqrt(Variance); // stredná kvadratická odchýlka
-
-            public void Initialize(int windowSize)
-            {
-                maxWindowSize = windowSize;
-                samples = new float[maxWindowSize];
-            }
-
-            public void Integrate(float sample)
-            {
-                index = (index + 1) % maxWindowSize;
-                float samplePrev = samples[index];
-                float meanPrev = mean;
-
-                mean += (sample - samplePrev) / maxWindowSize;
-                varianceSum += (sample + samplePrev - mean - meanPrev) * (sample - samplePrev);
-
-                samples[index] = sample;
-            }
         }
     }
 }

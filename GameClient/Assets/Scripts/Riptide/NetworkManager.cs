@@ -85,8 +85,8 @@ public class NetworkManager : MonoBehaviour
 
     private void Update()
     {
-        Multiplayer.LerpManager.Update();
         logicTimer.Update();
+        Multiplayer.LerpManager.Update();
     }
 
     private void FixedTime()
@@ -97,7 +97,6 @@ public class NetworkManager : MonoBehaviour
 
     private void FixedUpdate()
     {
-        
     }
 
     private void OnApplicationQuit()
