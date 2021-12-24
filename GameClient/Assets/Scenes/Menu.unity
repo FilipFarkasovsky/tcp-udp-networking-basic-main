@@ -2426,7 +2426,11 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 2791785296695005700, guid: efa326f91579ebe4db351d501db43a00, type: 3}
       propertyPath: Delay
-      value: 0
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 2791785296695005700, guid: efa326f91579ebe4db351d501db43a00, type: 3}
+      propertyPath: WaitForLerp
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 2791785296695005700, guid: efa326f91579ebe4db351d501db43a00, type: 3}
       propertyPath: INTERP_NEGATIVE_THRESHOLD
@@ -2438,7 +2442,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 2791785296951132719, guid: efa326f91579ebe4db351d501db43a00, type: 3}
       propertyPath: m_IsActive
-      value: 0
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 2791785298041904241, guid: efa326f91579ebe4db351d501db43a00, type: 3}
       propertyPath: m_RootOrder

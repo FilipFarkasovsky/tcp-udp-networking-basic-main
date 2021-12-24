@@ -10,14 +10,13 @@ namespace Multiplayer
         [SerializeField] public InterpolationMode mode;
         [SerializeField] public InterpolationImplemenation implementation;
         [SerializeField] public InterpolationTarget target;
-        public SnapshotStDev snapshotStDev;
 
         static public Convar interpolation = new Convar("cl_interp", 0.1f, "Visual delay for received updates", Flags.CLIENT, 0f, 0.5f);
 
         // SIMULATION
         private Queue<TransformUpdate> NetworkSimulationQueue = new Queue<TransformUpdate>();
         [SerializeField] Transform Server;
-        [SerializeField, Range(0, 0.5f)] float random;
+        [SerializeField, Range(0, 0.5f)] float serverDelay;
         private float lastSimulationSnapshot;
 
         private List<TransformUpdate> futureTransformUpdates = new List<TransformUpdate>();
@@ -27,8 +26,8 @@ namespace Multiplayer
         private int lastTick;
         private float lastLerpAmount;
 
-        [SerializeField] private float timeElapsed = 0f;
-        [SerializeField] private float timeToReachTarget = 0.1f;
+        private float timeElapsed = 0f;
+        private float timeToReachTarget = 0.1f;
 
         [SerializeField] bool Delay = false;
         [SerializeField] bool WaitForLerp = false;
@@ -377,7 +376,7 @@ namespace Multiplayer
             if (lastSimulationSnapshot + Time.fixedDeltaTime < Time.unscaledTime)
             {
                 lastSimulationSnapshot = Time.unscaledTime;
-                NetworkSimulationQueue.Enqueue(new TransformUpdate(0, Time.unscaledTime, Server.position, Server.rotation));
+                NetworkSimulationQueue.Enqueue(new TransformUpdate(0, Time.unscaledTime, Time.unscaledTime + serverDelay, Server.position, Server.rotation));
             }
         }
         // simulates update handling on client
