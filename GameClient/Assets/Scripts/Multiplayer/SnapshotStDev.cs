@@ -1,3 +1,4 @@
+Ôªø
 using System;
 using System.Collections.Generic;
 using UnityEngine;
@@ -6,6 +7,65 @@ namespace Multiplayer
 {
     public class SnapshotStDev : MonoBehaviour
     {
+        struct Snapshot
+        {
+            public Vector3 Position;
+            public Quaternion Rotation;
+            public float Time;
+        }
+
+        //class TransformUpdate
+        //{
+        //    public static TransformUpdate zero = new TransformUpdate(0, 0, 0, Vector3.zero, Vector3.zero, Quaternion.identity, Quaternion.identity);
+
+        //    public int tick;
+
+        //    public float time;
+        //    public float lastTime;
+
+        //    public Vector3 position;
+        //    public Vector3 lastPosition;
+
+        //    public Quaternion rotation;
+        //    public Quaternion lastRotation;
+
+        //    internal TransformUpdate(int _tick, float _time, float _lastTime, Vector3 _position, Vector3 _lastPosition)
+        //    {
+        //        tick = _tick;
+        //        time = _time;
+        //        lastTime = _lastTime;
+
+        //        position = _position;
+        //        lastPosition = _lastPosition;
+
+        //        rotation = Quaternion.identity;
+        //    }
+
+        //    internal TransformUpdate(int _tick, float _time, float _lastTime, Quaternion _rotation, Quaternion _lastRotation)
+        //    {
+        //        tick = _tick;
+        //        time = _time;
+        //        lastTime = _lastTime;
+
+        //        position = Vector3.zero;
+
+        //        rotation = _rotation;
+        //        lastRotation = _lastRotation;
+        //    }
+
+        //    internal TransformUpdate(int _tick, float _time, float _lastTime, Vector3 _position, Vector3 _lastPosition, Quaternion _rotation, Quaternion _lastRotation)
+        //    {
+        //        tick = _tick;
+        //        time = _time;
+        //        lastTime = _lastTime;
+
+        //        position = _position;
+        //        lastPosition = _lastPosition;
+
+        //        rotation = _rotation;
+        //        lastRotation = _lastRotation;
+        //    }
+        //}
 
         [Header("Debug properties")]
         [SerializeField] float TimeLastSnapshotReceived;
@@ -18,7 +78,7 @@ namespace Multiplayer
         [SerializeField] float ScaledInterpolationTime;
         private float NormalInterpolationTime;
 
-       [Header("Interpolation properties")]
+        [Header("Interpolation properties")]
         [SerializeField] float InterpTimeScale = 1;
         [SerializeField] int SNAPSHOT_OFFSET_COUNT = 2;
 
@@ -28,18 +88,19 @@ namespace Multiplayer
         private const int SNAPSHOT_RATE = 32;
         private const float SNAPSHOT_INTERVAL = 1.0f / SNAPSHOT_RATE;
 
-         // We will set up tresholds
+        // We will set up tresholds
         [SerializeField] float INTERP_NEGATIVE_THRESHOLD = SNAPSHOT_INTERVAL * 0.5f;
         [SerializeField] float INTERP_POSITIVE_THRESHOLD = SNAPSHOT_INTERVAL * 2f;
 
         private StandardDeviation SnapshotDeliveryDeltaAvg;
 
-        private TransformUpdate update;
+        private TransformUpdate updateFrom, updateTo;
         float interpAlpha;
 
         void Start()
         {
-            update = new TransformUpdate(0 , Time.time, Time.time, transform.position, transform.position, transform.rotation, transform.rotation);
+            updateFrom = new TransformUpdate(0, Time.time, transform.position, transform.rotation);
+            updateTo = new TransformUpdate(0, Time.time, transform.position, transform.rotation);
 
             InterpTimeScale = 1;
 
@@ -62,15 +123,13 @@ namespace Multiplayer
             TimeSinceLastSnapshotReceived += Time.unscaledDeltaTime;
 
             //checknut
-            // re·lne meökanie === re·lny Ëas ak˝ je teraz - Ëas kedy m· zaËaù interpol·cia - meökanie 
+            // re√°lne me≈°kanie === re√°lny √®as ak√Ω je teraz - √®as kedy m√° za√®a¬ù interpol√°cia - me≈°kanie 
             RealDelayTarget = (MaxServerTimeReceived + TimeSinceLastSnapshotReceived - ScaledInterpolationTime) - DelayTarget;
 
             // zistit timeScale
-            //if (RealDelayTarget > (SNAPSHOT_INTERVAL * INTERP_POSITIVE_THRESHOLD))
-            if (RealDelayTarget > 1/16f)
+            if (RealDelayTarget > (SNAPSHOT_INTERVAL * INTERP_POSITIVE_THRESHOLD))
                 InterpTimeScale = 1.05f;
-            //else if (RealDelayTarget < (SNAPSHOT_INTERVAL * -INTERP_NEGATIVE_THRESHOLD))
-            else if (RealDelayTarget < - 1 /32f)
+            else if (RealDelayTarget < (SNAPSHOT_INTERVAL * -INTERP_NEGATIVE_THRESHOLD))
                 InterpTimeScale = 0.95f;
             else InterpTimeScale = 1.0f;
 
@@ -80,13 +139,14 @@ namespace Multiplayer
 
         private void ReceivingSnapshot()
         {
+            var received = false;
+
             while (NetworkSimQueue.Count > 0)
             {
-                // zadame ScaledInterpolationTime iba raz za hru
                 if (Snapshots.Count == 0)
                 {
-                    ScaledInterpolationTime = NormalInterpolationTime = NetworkSimQueue.Peek().Time - (SNAPSHOT_INTERVAL * SNAPSHOT_OFFSET_COUNT);
-                    Debug.Log(NetworkSimQueue.Peek().Time);
+                    ScaledInterpolationTime = NetworkSimQueue.Peek().Time - (SNAPSHOT_INTERVAL * SNAPSHOT_OFFSET_COUNT);
+                    NormalInterpolationTime = NetworkSimQueue.Peek().Time - (SNAPSHOT_INTERVAL * SNAPSHOT_OFFSET_COUNT);
                 }
 
                 var snapshot = NetworkSimQueue.Dequeue();
@@ -96,6 +156,12 @@ namespace Multiplayer
                 // Max time when we are interpolating
                 MaxServerTimeReceived = Math.Max(MaxServerTimeReceived, snapshot.Time);
 
+                received = true;
+            }
+
+            // if we had received server snapshot
+            if (received)
+            {
                 // we sample the current time - the time of the last receivaed packet
                 SnapshotDeliveryDeltaAvg.Integrate(Time.time - TimeLastSnapshotReceived);
                 // Debug.Log(Time.time - TimeLastSnapshotReceived);
@@ -103,7 +169,7 @@ namespace Multiplayer
                 TimeSinceLastSnapshotReceived = 0f;
 
                 // checknut
-                // meökanie     ===       dÂûka interpol·cie + priemer hodnÙt + 2 * smerodajn· odch˝lka
+                // me≈°kanie     ===       d√•≈æka interpol√°cie + priemer hodn√¥t + 2 * smerodajn√° odch√Ωlka
                 DelayTarget = (SNAPSHOT_INTERVAL * SNAPSHOT_OFFSET_COUNT) + SnapshotDeliveryDeltaAvg.Mean + (SnapshotDeliveryDeltaAvg.Value * 2f);
             }
         }
@@ -112,8 +178,8 @@ namespace Multiplayer
         {
             if (Snapshots.Count > 0)
             {
-                // zrefaktorizovaù
-                // moûno pouûiù Utils.TransformUpdate
+                // zrefaktorizova¬ù
+                // mo≈æno pou≈æi¬ù Utils.TransformUpdate
 
                 // zoradime snapchoty
                 for (int i = 0; i < Snapshots.Count; ++i)
@@ -123,8 +189,8 @@ namespace Multiplayer
                     // stane sa to ak je prilis velky lag
                     if (i + 1 == Snapshots.Count)
                     {
-                        update.lastPosition = update.position = Snapshots[i].Position;
-                        update.lastRotation = update.rotation = Snapshots[i].Rotation;
+                        updateFrom.position = updateTo.position = Snapshots[i].Position;
+                        updateFrom.rotation = updateTo.rotation = Snapshots[i].Rotation;
                         interpAlpha = 0;
                     }
                     else
@@ -138,16 +204,16 @@ namespace Multiplayer
                         // lebo potom neexistuje    Snapshots[t].Time >= NormalInterpolationTime
                         if (Snapshots[f].Time <= ScaledInterpolationTime && Snapshots[t].Time >= ScaledInterpolationTime)
                         {
-                            update.lastPosition = Snapshots[f].Position;
-                            update.position = Snapshots[t].Position;
+                            updateFrom.position = Snapshots[f].Position;
+                            updateTo.position = Snapshots[t].Position;
 
-                            update.lastRotation = Snapshots[f].Rotation;
-                            update.rotation = Snapshots[t].Rotation;
+                            updateFrom.rotation = Snapshots[f].Rotation;
+                            updateTo.rotation = Snapshots[t].Rotation;
 
                             // 
                             var current = ScaledInterpolationTime - Snapshots[f].Time;
                             // time between snapshots
-                            var range = Snapshots[t].Time - Snapshots[f].Time;      
+                            var range = Snapshots[t].Time - Snapshots[f].Time;
 
                             interpAlpha = Mathf.Clamp01(current / range);
 
@@ -157,8 +223,8 @@ namespace Multiplayer
                 }
 
                 // Lerping
-                transform.position = Vector3.Lerp(update.lastPosition, update.position, interpAlpha);
-                transform.rotation = Quaternion.Slerp(update.lastRotation, update.rotation, interpAlpha);
+                transform.position = Vector3.Lerp(updateFrom.position, updateTo.position, interpAlpha);
+                transform.rotation = Quaternion.Slerp(updateFrom.rotation, updateTo.rotation, interpAlpha);
             }
         }
 
@@ -172,7 +238,6 @@ namespace Multiplayer
             });
 
             ReceivingSnapshot();
-
         }
     }
 }

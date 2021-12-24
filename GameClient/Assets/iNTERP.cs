@@ -44,12 +44,16 @@ namespace Multiplayer
 
         void Update()
         {
-            ServerSnapshot();
             ServerMovement();
 
             ClientUpdateInterpolationTime();
             ClientReceiveDataFromServer();
             ClientRenderLatestPostion();
+        }
+
+        private void FixedUpdate()
+        {
+            ServerSnapshot();
         }
 
         void ClientReceiveDataFromServer()

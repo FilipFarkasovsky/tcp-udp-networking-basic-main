@@ -78,8 +78,8 @@ namespace Multiplayer
                     interpolation.NewUpdate(serverTick, position, rotation);
                     break;
                 case Interpolation.InterpolationImplemenation.alex:
-                    interpolation.snapshotStDev.ServerSnapshot(position, rotation, time);
-                    //interpolation.snapshotStDev.ServerSnapshot(position, rotation);
+                    interpolation.NewUpdate(serverTick, time, position, rotation);
+                    //interpolation.snapshotStDev.ServerSnapshot(position, rotation, time);
                     break;
             }
 

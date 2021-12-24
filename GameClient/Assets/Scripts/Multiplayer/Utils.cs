@@ -120,56 +120,30 @@ namespace Multiplayer
     /// <summary> Stores positions and rotations at given tick - used for interpolation </summary>
     public class TransformUpdate
     {
-        public static TransformUpdate zero = new TransformUpdate(0, 0, 0, Vector3.zero, Vector3.zero, Quaternion.identity, Quaternion.identity);
+        public static TransformUpdate zero = new TransformUpdate(0, 0, 0, Vector3.zero, Quaternion.identity);
 
         public int tick;
-
         public float time;
-        public float lastTime;
-
+        public float deliveryTime;
         public Vector3 position;
-        public Vector3 lastPosition;
-
         public Quaternion rotation;
-        public Quaternion lastRotation;
 
-        internal  TransformUpdate(int _tick, float _time, float _lastTime, Vector3 _position, Vector3 _lastPosition)
+        internal TransformUpdate(int tick, float time, float deliveryTime, Vector3 position, Quaternion rotation)
         {
-            tick = _tick;
-            time = _time;
-            lastTime = _lastTime;
-
-            position = _position;
-            lastPosition = _lastPosition;
-
-            rotation = Quaternion.identity;
-            lastRotation = Quaternion.identity;
+            this.tick = tick;
+            this.time = time;
+            this.deliveryTime = deliveryTime;
+            this.position = position;
+            this.rotation = rotation;
         }
 
-        internal TransformUpdate(int _tick, float _time, float _lastTime, Quaternion _rotation, Quaternion _lastRotation)
+        internal TransformUpdate(int tick, float time, Vector3 position, Quaternion rotation)
         {
-            tick = _tick;
-            time = _time;
-            lastTime = _lastTime;
-
-            position = Vector3.zero;
-            lastPosition = Vector3.zero;
-
-            rotation = _rotation;
-            lastRotation = _lastRotation;
-        }
-
-        internal TransformUpdate(int _tick, float _time, float _lastTime, Vector3 _position, Vector3 _lastPosition, Quaternion _rotation, Quaternion _lastRotation)
-        {
-            tick = _tick;
-            time = _time;
-            lastTime = _lastTime;
-
-            position = _position;
-            lastPosition = _lastPosition;
-
-            rotation = _rotation;
-            lastRotation = _lastRotation;
+            this.tick = tick;
+            this.time = time;
+            this.deliveryTime = 0;
+            this.position = position;
+            this.rotation = rotation;
         }
     }
 
