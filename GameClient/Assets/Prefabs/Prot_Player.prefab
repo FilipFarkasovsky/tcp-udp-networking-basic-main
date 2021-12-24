@@ -46,9 +46,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: c8a3d335e95e83044b9253b712d4a153, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  networkedObjectType: 0
+  id: 0
   interpolation: {fileID: 3499376697183321703}
   cameraInterpolation: {fileID: 0}
-  id: 0
   username: 
   playerAnimation: {fileID: 0}
 --- !u!114 &3499376697183321703
@@ -66,15 +67,22 @@ MonoBehaviour:
   mode: 0
   implementation: 0
   target: 1
-  tomWeilandInterpolation: {fileID: 0}
-  snapshotStDev: {fileID: 0}
-  timeElapsed: 0
-  timeToReachTarget: 0.03125
-  Sync: 1
+  Server: {fileID: 0}
+  serverDelay: 0
   Delay: 0
   WaitForLerp: 0
   clientSimObject: {fileID: 0}
   PreviousPosition: {x: 0, y: 0, z: 0}
+  TimeLastSnapshotReceived: 0
+  TimeSinceLastSnapshotReceived: 0
+  DelayTarget: 0
+  RealDelayTarget: 0
+  MaxServerTimeReceived: 0
+  ScaledInterpolationTime: 0
+  InterpTimeScale: 1
+  SNAPSHOT_OFFSET_COUNT: 2
+  INTERP_NEGATIVE_THRESHOLD: 0.015625
+  INTERP_POSITIVE_THRESHOLD: 0.0625
 --- !u!1 &2477461848161634569
 GameObject:
   m_ObjectHideFlags: 0
@@ -134,7 +142,7 @@ MeshRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 10303, guid: 0000000000000000f000000000000000, type: 0}
+  - {fileID: 2100000, guid: 5ac2b538ae33c914c8ca225a4138c03d, type: 2}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
@@ -215,7 +223,7 @@ MeshRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 10303, guid: 0000000000000000f000000000000000, type: 0}
+  - {fileID: 2100000, guid: 69f36b78dfadcca4585d7ca9e4921989, type: 2}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0

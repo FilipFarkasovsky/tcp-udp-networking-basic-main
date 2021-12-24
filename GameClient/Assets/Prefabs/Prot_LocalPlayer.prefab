@@ -86,9 +86,7 @@ MonoBehaviour:
   playerCamera: {fileID: 4634531960900213368}
   rb: {fileID: 983334931536477041}
   velocity: {x: 0, y: 0, z: 0}
-  ClientTick: 0
-  ClientLastAckedTick: 0
-  simpleDS: {fileID: 8991921563913084643}
+  angularVelocity: {x: 0, y: 0, z: 0}
 --- !u!114 &4431049985373720381
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -106,7 +104,6 @@ MonoBehaviour:
     serializedVersion: 2
     m_Bits: 64
   checkRadius: 0.485
-  velocity: {x: 0, y: 0, z: 0}
 --- !u!136 &3902867291292079139
 CapsuleCollider:
   m_ObjectHideFlags: 0
@@ -258,7 +255,7 @@ MeshRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 10303, guid: 0000000000000000f000000000000000, type: 0}
+  - {fileID: 2100000, guid: 90f24ed7826417f47840d7039d3e8446, type: 2}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
@@ -304,7 +301,6 @@ GameObject:
   - component: {fileID: 4634531960378573318}
   - component: {fileID: -4224624851614131593}
   - component: {fileID: 779258126352695416}
-  - component: {fileID: 8991921563913084643}
   m_Layer: 3
   m_Name: Prot_LocalPlayer
   m_TagString: Player
@@ -340,10 +336,11 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: c8a3d335e95e83044b9253b712d4a153, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  networkedObjectType: 0
   id: 0
-  username: 
   interpolation: {fileID: 8665110661722755103}
   cameraInterpolation: {fileID: 0}
+  username: 
   playerAnimation: {fileID: 0}
 --- !u!114 &779258126352695416
 MonoBehaviour:
@@ -357,27 +354,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 007c0fd8c48a83c4295ded967aafe940, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
---- !u!114 &8991921563913084643
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 4634531960378573312}
-  m_Enabled: 0
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: daa411bddda2012458e71003393b907c, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  ClientSimObject: {fileID: 4372309730251437740}
-  SmoothObject: {fileID: 4867705065824037724}
-  CameraTransform: {fileID: 4634531960900213370}
-  ClientTick: 0
-  ClientLastAckedTick: 0
-  playerManager: {fileID: -4224624851614131593}
-  ClientRb: {fileID: 983334931536477041}
-  RotationSpeed: 90
-  PreviousPosition: {x: 0, y: 0, z: 0}
 --- !u!1 &4634531960900213371
 GameObject:
   m_ObjectHideFlags: 0
@@ -390,7 +366,6 @@ GameObject:
   - component: {fileID: 4634531960900213368}
   - component: {fileID: 4634531960900213369}
   - component: {fileID: 7973445002426974858}
-  - component: {fileID: 6083027273073820240}
   m_Layer: 3
   m_Name: Camera
   m_TagString: Untagged
@@ -485,6 +460,7 @@ MonoBehaviour:
     serializedVersion: 2
     m_Bits: 1
   m_VolumeTrigger: {fileID: 0}
+  m_VolumeFrameworkUpdateModeOption: 2
   m_RenderPostProcessing: 0
   m_Antialiasing: 0
   m_AntialiasingQuality: 2
@@ -495,21 +471,6 @@ MonoBehaviour:
   m_RequiresDepthTexture: 0
   m_RequiresColorTexture: 0
   m_Version: 2
---- !u!114 &6083027273073820240
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 4634531960900213371}
-  m_Enabled: 0
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: aa4c16e88ef606548b0316b16695f649, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  FollowTarget: {fileID: 1524047691326610301}
-  TargetOffset: {x: 0, y: 0, z: 0}
-  MoveSpeed: 10
 --- !u!1 &4867705065824037724
 GameObject:
   m_ObjectHideFlags: 0
@@ -520,7 +481,6 @@ GameObject:
   m_Component:
   - component: {fileID: 5181433685988728505}
   - component: {fileID: 8665110661722755103}
-  - component: {fileID: 1516380208195697810}
   m_Layer: 0
   m_Name: Visual
   m_TagString: Untagged
@@ -558,28 +518,19 @@ MonoBehaviour:
   mode: 1
   implementation: 0
   target: 0
-  tomWeilandInterpolation: {fileID: 1516380208195697810}
-  snapshotStDev: {fileID: 0}
-  timeElapsed: 0
-  timeToReachTarget: 0.03125
-  Sync: 0
+  Server: {fileID: 0}
+  serverDelay: 0
   Delay: 0
   WaitForLerp: 0
   clientSimObject: {fileID: 1524047691326610301}
   PreviousPosition: {x: 0, y: 0, z: 0}
---- !u!114 &1516380208195697810
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 4867705065824037724}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 16e16345828b90745af9e79ae8faae68, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  mode: 1
-  timeElapsed: 0
-  timeToReachTarget: 0.1
-  isLocalRotation: 0
+  TimeLastSnapshotReceived: 0
+  TimeSinceLastSnapshotReceived: 0
+  DelayTarget: 0
+  RealDelayTarget: 0
+  MaxServerTimeReceived: 0
+  ScaledInterpolationTime: 0
+  InterpTimeScale: 1
+  SNAPSHOT_OFFSET_COUNT: 2
+  INTERP_NEGATIVE_THRESHOLD: 0.015625
+  INTERP_POSITIVE_THRESHOLD: 0.0625
