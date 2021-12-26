@@ -72,16 +72,7 @@ namespace Multiplayer
                 return;
             }
 
-            switch (interpolation.implementation)
-            {
-                case Interpolation.InterpolationImplemenation.notAGoodUsername:
-                    interpolation.NewUpdate(serverTick, position, rotation);
-                    break;
-                case Interpolation.InterpolationImplemenation.alex:
-                    interpolation.NewUpdate(serverTick, time, position, rotation);
-                    //interpolation.snapshotStDev.ServerSnapshot(position, rotation, time);
-                    break;
-            }
+            interpolation.NewUpdate(serverTick, position, rotation);
 
             if (cameraInterpolation) cameraInterpolation.NewUpdate(serverTick, rotation);
         }

@@ -101,8 +101,8 @@ namespace Multiplayer
             ++simulationFrame;
 
             // Add position to interpolate
-            if (playerManager.interpolation.implementation == Interpolation.InterpolationImplemenation.alex) playerManager.interpolation.PreviousPosition = rb.position;
-            if (playerManager.interpolation.implementation == Interpolation.InterpolationImplemenation.notAGoodUsername) playerManager.interpolation.PlayerUpdate(simulationFrame, rb.position);
+            if (playerManager.interpolation.target == Interpolation.InterpolationTarget.localPlayer) playerManager.interpolation.PreviousPosition = rb.position;
+            if (playerManager.interpolation.target == Interpolation.InterpolationTarget.localPlayerDeltaSnapshot) playerManager.interpolation.PlayerUpdate(simulationFrame, rb.position);
         }
 
         private void Update()

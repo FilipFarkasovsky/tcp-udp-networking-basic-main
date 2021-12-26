@@ -8,7 +8,6 @@ namespace Multiplayer
     {
         #region properties
         [SerializeField] public InterpolationMode mode;
-        [SerializeField] public InterpolationImplemenation implementation;
         [SerializeField] public InterpolationTarget target;
 
         static public Convar interpolation = new Convar("cl_interp", 0.1f, "Visual delay for received updates", Flags.CLIENT, 0f, 0.5f);
@@ -95,23 +94,13 @@ namespace Multiplayer
 
         private void Update()
         {
-            switch (implementation)
-            {
-                case InterpolationImplemenation.notAGoodUsername:
-                    NotAGoodUsername();
-                    break;
-                case InterpolationImplemenation.alex:
-                    Alex();
-                    break;
-            }
-        }
-
-        private void NotAGoodUsername()
-        {
             switch (target)
             {
                 case InterpolationTarget.localPlayer:
                     LocalPlayerUpdate();
+                    break;
+                case InterpolationTarget.localPlayerDeltaSnapshot:
+                    LocalPlayerDeltaSnapshotUpdate();
                     break;
                 case InterpolationTarget.syncedRemote:
                     SyncedUpdate();
@@ -119,20 +108,7 @@ namespace Multiplayer
                 case InterpolationTarget.nonSyncedRemote:
                     NonSyncedUpdate();
                     break;
-            }
-        }
-
-        private void Alex()
-        {
-            switch (target)
-            {
-                case InterpolationTarget.localPlayer:
-                    LocalPlayerDeltaSnapshotUpdate();
-                    break;
-                case InterpolationTarget.syncedRemote:
-                    RemotePlayerDeltaSnapshot();
-                    break;
-                case InterpolationTarget.nonSyncedRemote:
+                case InterpolationTarget.deviationRemote:
                     RemotePlayerDeltaSnapshot();
                     break;
             }
@@ -338,6 +314,7 @@ namespace Multiplayer
 
                             lerpAlpha = Mathf.Clamp01(current / range);
 
+                            Debug.Log(futureTransformUpdates[t].tick);
                             break;
                         }
                     }
@@ -560,17 +537,13 @@ namespace Multiplayer
             rotation,
         }
 
-        public enum InterpolationImplemenation
-        {
-            notAGoodUsername,
-            alex,
-        }
-
         public enum InterpolationTarget
         {
             localPlayer,
+            localPlayerDeltaSnapshot,
             syncedRemote,
             nonSyncedRemote,
+            deviationRemote,
         }
     }
 }
